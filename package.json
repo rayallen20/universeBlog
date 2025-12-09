@@ -1,0 +1,38 @@
+{
+  "name": "universeblog",
+  "version": "1.0.0",
+  "description": "## 1. 介绍",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode=production",
+    "dev": "webpack serve --port=4060 --mode=development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rayallen20/universeBlog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rayallen20/universeBlog/issues"
+  },
+  "homepage": "https://github.com/rayallen20/universeBlog#readme",
+  "dependencies": {
+    "@tweenjs/tween.js": "^25.0.0",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.5",
+    "style-loader": "^4.0.0",
+    "three": "^0.181.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "@types/three": "^0.181.0",
+    "babel-loader": "^10.0.0",
+    "webpack": "^5.103.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
+}
