@@ -16,7 +16,7 @@ export const camera = new THREE.PerspectiveCamera(
  * 本常量用于定义相机的位置
  * @type {THREE.Vector3}
  * */
-const position = new THREE.Vector3(0, 5, 10)
+const position = new THREE.Vector3(-11, 6, 40)
 // 设置相机位置
 camera.position.set(position.x, position.y, position.z)
 

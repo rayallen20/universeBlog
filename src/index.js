@@ -9,7 +9,8 @@ import {createOrbitControls} from './controls'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
-import { sunRoot, initSun, setAutoRotation } from './sun.js'
+import {initSun, setAutoRotation, sunAxis} from './sun.js'
+import {initMercury, mercuryAxis, updateMercury} from "./mercury";
 
 document.body.appendChild(renderer.domElement)
 
@@ -37,9 +38,17 @@ const controls = createOrbitControls(camera, renderer.domElement)
 // 初始化太阳模型并添加到场景中
 try {
     await initSun()
-    scene.add(sunRoot)
+    scene.add(sunAxis)
 } catch (err) {
     console.error('初始化太阳模型失败:', err)
+}
+
+// 初始化水星模型并添加到场景中
+try {
+    await initMercury()
+    scene.add(mercuryAxis)
+} catch (err) {
+    console.error('初始化水星模型失败:', err)
 }
 
 const composer = new EffectComposer(renderer)
@@ -67,6 +76,9 @@ function animate() {
 
     // 设置太阳自转
     setAutoRotation()
+
+    // 更新水星位置和自转
+    updateMercury()
 
     composer.render(scene, camera)
 }

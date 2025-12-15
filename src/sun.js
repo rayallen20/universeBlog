@@ -1,12 +1,16 @@
 import * as THREE from 'three'
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
+import {loadGLTF} from "./lib/loadGLTF";
+import {scaleModel} from "./lib/scalModel";
 
 /**
  * 本常量用于定义太阳模型的相关配置
  * @type {Object}
  * */
 const config = {
+    // 太阳组名称
     groupName: 'SunRoot',
+    // 太阳自转轴名称
+    axisName: 'SunAxis',
     // 太阳模型的路径
     path: '../assets/sun/scene.gltf',
     // 太阳模型自发光相关配置
@@ -17,16 +21,43 @@ const config = {
         intensity: 3.0,
     },
     scale: {
-        size: 4
+        // 太阳模型缩放比例
+        size: 4,
     },
     autoRotation: {
         // 太阳自转速度
-        speed: 0.01
-    }
+        speed: 0.01,
+        // 太阳自转轴倾斜角度 单位: 角度
+        dipAngle: 7.25,
+    },
+    light: {
+        // 光源颜色
+        color: 0xffaa00,
+        // 光源强度
+        intensity: 1000,
+        // 光源衰减距离
+        distance: 5000,
+        // 光源衰减系数
+        decay: 2,
+        // 是否投射阴影
+        castShadow: true,
+    },
+    position: new THREE.Vector3(0, 0, 0),
 }
 
-export const sunRoot = new THREE.Group()
+/**
+ * @type {THREE.Group} 太阳自转轴组 用于控制太阳的自转轴倾斜
+ * */
+export const sunAxis = new THREE.Group()
+sunAxis.name = config.axisName
+
+/**
+ * @type {THREE.Group} 太阳组 用于包含太阳模型和相关光源
+ * */
+const sunRoot = new THREE.Group()
 sunRoot.name = config.groupName
+
+sunAxis.add(sunRoot)
 
 /**
  * 本函数用于初始化太阳模型 并将其添加到sunRoot组中
@@ -44,30 +75,22 @@ export async function initSun() {
 
     const model = gltf.scene
     setEmissive(model)
-    scaleModel(model)
+    scaleModel(model, config.scale.size)
 
     sunRoot.clear()
     sunRoot.add(model)
-}
 
-/**
- * 本函数用于异步加载GLTF模型
- * @param {string} path 模型路径
- * @return {Promise<THREE.GLTF>} Promise对象 包含加载完成的GLTF模型
- * */
-function loadGLTF(path) {
-    return new Promise((resolve, reject) => {
-        new GLTFLoader().load(
-            path,
-            (gltf) => {
-                resolve(gltf)
-            },
-            undefined,
-            (err) => {
-                reject(err)
-            }
-        )
-    })
+    // 创建太阳点光源并添加到sunRoot组中
+    const light = createLight()
+    sunRoot.add(light)
+
+    // 旋转自转轴以实现倾斜效果
+    // 也就是说视觉上看起来的倾斜 是先旋转自转轴 再进行自转的
+    sunAxis.rotation.z = THREE.MathUtils.degToRad(config.autoRotation.dipAngle)
+
+    // 用于确认自转轴方向的辅助线
+    // const axisHelper = new THREE.AxesHelper(15)
+    // sunRoot.add(axisHelper)
 }
 
 /**
@@ -103,43 +126,20 @@ function setEmissive(model) {
 }
 
 /**
- * 本函数用于缩放模型
- * @param {THREE.Object3D} model 需要缩放的模型
- * @return {void}
+ * 本函数用于创建太阳的点光源
+ * @return {THREE.PointLight} 太阳点光源实例
  * */
-function scaleModel(model) {
-    // 获取模型的包围盒
-    const box = new THREE.Box3().setFromObject(model)
-    // const boxHelper = new THREE.Box3Helper(box, 0xffff00)
-    // scene.add(boxHelper)
+function createLight() {
+    const light = new THREE.PointLight(
+        config.light.color,
+        config.light.intensity,
+        config.light.distance,
+        config.light.decay
+        )
+    light.castShadow = config.light.castShadow
 
-    // 计算包围盒尺寸
-    const size = new THREE.Vector3()
-    box.getSize(size)
-    // TODO: 后续再创建其他星球时 需要根据太阳的尺寸来设置其他星球的尺寸
-    // console.log('Box Size: ', size)
-
-    // 计算包围盒中心
-    const center = new THREE.Vector3()
-    box.getCenter(center)
-    // console.log('Box Center: ', center)
-
-    // 把模型移动到原点
-    model.position.sub(center)
-
-    // 缩放模型
-    const targetMaxSize = config.scale.size
-    const maxDim = Math.max(size.x, size.y, size.z)
-    const scale = targetMaxSize / maxDim
-    model.scale.setScalar(scale)
-
-    // TODO: 后续再创建其他星球时 需要根据太阳的尺寸来设置其他星球的尺寸
-    // const box2 = new THREE.Box3().setFromObject(model)
-    // const size2 = new THREE.Vector3()
-    // box2.getSize(size2)
-    // console.log('Resized Box Size: ', size2)
-    // const boxHelper2 = new THREE.Box3Helper(box2, 0xff00ff)
-    // scene.add(boxHelper2)
+    light.position.set(0, 0, 0)
+    return light
 }
 
 /**
