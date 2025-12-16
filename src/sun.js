@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import {loadGLTF} from "./lib/loadGLTF";
 import {scaleModel} from "./lib/scalModel";
+import {centerModelToOrigin} from "./lib/centerModelToOrigin";
 
 /**
  * 本常量用于定义太阳模型的相关配置
@@ -76,6 +77,7 @@ export async function initSun() {
     const model = gltf.scene
     setEmissive(model)
     scaleModel(model, config.scale.size)
+    centerModelToOrigin(model)
 
     sunRoot.clear()
     sunRoot.add(model)

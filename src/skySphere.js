@@ -17,6 +17,9 @@ const config = {
     texturePath: '../assets/environment/NightSkyHDRI008_TONEMAPPED.jpg',
     // 天空球网格对象的名称
     name: 'SkySphere',
+    autoRotation: {
+        speed: 0.0005,
+    },
 }
 
 /**
@@ -95,4 +98,15 @@ export async function initSkySphereTexture() {
     })
 
     skySphere.material.needsUpdate = true
+}
+
+/**
+ * 本函数用于设置天空球的自转
+ * */
+export function setAutoRotation() {
+    if (skySphere.rotation.y >= Math.PI * 2) {
+        skySphere.rotation.y = 0
+    }
+
+    skySphere.rotation.y += config.autoRotation.speed
 }

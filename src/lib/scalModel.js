@@ -14,11 +14,6 @@ export function scaleModel(model, scaleSize) {
     box.getSize(size)
     console.log('Box Size: ', size)
 
-    // 把模型几何中心移到原点
-    const center = new THREE.Vector3()
-    box.getCenter(center)
-    model.position.sub(center)
-
     // 按最大边缩放模型
     const maxDim = Math.max(size.x, size.y, size.z) || 1
     const scale = scaleSize / maxDim

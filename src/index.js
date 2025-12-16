@@ -3,13 +3,13 @@ import '../assets/index.css'
 import {renderer} from './renderer'
 import {camera} from './camera'
 import {scene, initSceneEnvironment} from './scene'
-import { skySphere, initSkySphereTexture } from './skySphere'
+import {skySphere, initSkySphereTexture, setAutoRotation as setSkySphereAutoRotation} from './skySphere'
 import {axesHelper} from './axesHelper'
 import {createOrbitControls} from './controls'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
-import {initSun, setAutoRotation, sunAxis} from './sun.js'
+import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
 import {initMercury, mercuryAxis, updateMercury} from "./mercury";
 
 document.body.appendChild(renderer.domElement)
@@ -74,8 +74,11 @@ function animate() {
     requestAnimationFrame(animate)
     controls.update()
 
+    // 设置天空球自转
+    setSkySphereAutoRotation()
+
     // 设置太阳自转
-    setAutoRotation()
+    setSunAutoRotation()
 
     // 更新水星位置和自转
     updateMercury()
