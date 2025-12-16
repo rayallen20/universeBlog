@@ -140,6 +140,14 @@ function createLight() {
         )
     light.castShadow = config.light.castShadow
 
+    light.shadow.mapSize.set(2048, 2048) // 先拉高，方便确认是否有效
+    light.shadow.bias = -0.00005
+    light.shadow.normalBias = 0.01
+
+// 点光源阴影相机范围
+    light.shadow.camera.near = 0.1
+    light.shadow.camera.far = 2000  // 至少要大于金星轨道半径
+
     light.position.set(0, 0, 0)
     return light
 }

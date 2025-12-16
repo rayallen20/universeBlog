@@ -2,6 +2,11 @@ import * as THREE from 'three'
 import {loadGLTF} from "./lib/loadGLTF";
 import {scaleModel} from "./lib/scalModel";
 import {centerModelToOrigin} from "./lib/centerModelToOrigin";
+import {initOrbitalGroupPosition} from "./planetHelper/position";
+import {setOrbitalGroupPosition} from "./planetHelper/revolution";
+import {setSpinAutoRotation} from "./planetHelper/autoRotation";
+import {createOrbitPath} from "./planetHelper/orbitPath";
+import {setShadowCastReceive} from "./lib/setShadow";
 
 const config = {
     groupName: 'MercuryRoot',
@@ -16,7 +21,6 @@ const config = {
         speed: 0.04,
     },
     orbit: {
-        name: 'MercurySpin',
         // 长半轴
         semiMajorAxis: 15,
         // 轨道偏心率
@@ -26,15 +30,14 @@ const config = {
         // 公转速度
         speed: 0.01,
         path: {
+            name: 'MercuryOrbit',
             segment: 256,
             // 轨道路径颜色
             color: 0x888888,
-            // 轨道路径线宽
-            lineWidth: 1.2,
             // 轨道路径是否透明
             transparent: true,
             // 轨道路径透明度值
-            opacity: 0.4,
+            opacity: 0.6,
         }
     },
 }
@@ -52,14 +55,12 @@ mercuryAxis.name = config.axisName
  * */
 const mercuryRoot = new THREE.Group()
 mercuryRoot.name = config.groupName
-mercuryAxis.add(mercuryRoot)
 
 /**
  * @type {THREE.Group} 水星自转层 用于控制水星的自转
  * */
 const mercurySpin = new THREE.Group()
 mercurySpin.name = config.spinName
-mercuryRoot.add(mercurySpin)
 
 /**
  * @type {THREE.Object3D|null} 水星模型实例 负责水星的外观/缩放/居中
@@ -67,13 +68,17 @@ mercuryRoot.add(mercurySpin)
 let mercuryModel = null
 
 /**
- * @type {number} 当前公转角的角度 用于计算水星公转位置
+ * @type {Object} 当前公转角的角度 用于计算水星公转位置
+ * Tips: 这里使用对象包装是为了在函数中传递引用类型 从而实现角度值的更新
  * */
-let orbitAngle = 0
+let orbitAngle = {
+    value: 0,
+}
 
 /**
- * 本函数用于初始化水星模型
+ * 本函数用于初始化水星模型组 (模型组包括: 轨道组 -> 公转组 -> 自转组 -> 模型本体)
  * @return {Promise<void>}
+ * @throws {Error} 如果加载水星模型失败则抛出错误
  * */
 export async function initMercury() {
     let gltf = null
@@ -85,27 +90,31 @@ export async function initMercury() {
     }
 
     mercuryModel = gltf.scene
+    setShadowCastReceive(mercuryModel)
 
     // 缩放模型
     scaleModel(mercuryModel, config.scale.size)
     // 居中模型
     centerModelToOrigin(mercuryModel)
 
-    // 按层级挂载
+    // 按层级挂载对象
+    mercurySpin.clear()
+    mercurySpin.add(mercuryModel)
+
     mercuryRoot.clear()
     mercuryRoot.add(mercurySpin)
 
-    mercurySpin.clear()
-    mercurySpin.add(mercuryModel)
+    mercuryAxis.clear()
+    mercuryAxis.add(mercuryRoot)
 
     // 倾斜自转轴
     mercuryAxis.rotation.x = THREE.MathUtils.degToRad(config.orbit.dipAngle)
 
     // 初始化水星位置
-    initMercuryPosition()
+    initOrbitalGroupPosition(mercuryRoot, orbitAngle.value, config.orbit.semiMajorAxis, config.orbit.eccentricity)
 
     // 创建轨道路径并添加到自转轴组中
-    const orbitPath = createOrbitPath()
+    const orbitPath = createOrbitPath(config.orbit.semiMajorAxis, config.orbit.eccentricity, config.orbit.path)
     mercuryAxis.add(orbitPath)
 
     // 用于确认自转轴方向的辅助线
@@ -113,95 +122,20 @@ export async function initMercury() {
     // mercuryAxis.add(axisHelper)
 }
 
-
-
-/**
- * 本函数用于设置水星的初始位置
- * */
-function initMercuryPosition() {
-    const position = calcMercuryPosition(orbitAngle)
-
-    mercuryRoot.position.set(position.x, 0, position.z)
-}
-
-/**
- * 本函数用于计算水星在轨道上的位置
- * @param {number} theta 公转角度
- * @return {{x: number, z: number}} 水星在轨道上的位置坐标
- * */
-function calcMercuryPosition(theta) {
-    // 计算水星在轨道上的位置
-    const a = config.orbit.semiMajorAxis
-    const e = config.orbit.eccentricity
-    const b = a * Math.sqrt(1 - e * e)
-
-    const x = a * (Math.cos(theta) - e)
-    const z = b * Math.sin(theta)
-
-    return {x, z}
-}
-
 /**
  * 本函数用于更新水星的自转和公转状态
  * */
 export function updateMercury() {
-    setAutoRotation()
     setRevolution()
+    setSpinAutoRotation(mercurySpin, config.autoRotation.speed)
 }
 
 /**
  * 本函数用于设置水星的公转(移动mercuryRoot的位置)
+ * @return {void}
  * */
 function setRevolution() {
     // 更新公转角参数
-    orbitAngle += config.orbit.speed
-    if (orbitAngle >= Math.PI * 2) {
-        orbitAngle = 0
-    }
-
-    const position = calcMercuryPosition(orbitAngle)
-
-    mercuryRoot.position.set(position.x, 0, position.z)
-}
-
-/**
- * 本函数用于设置水星的自转(更新mercurySpin的旋转)
- * */
-function setAutoRotation() {
-    if (mercurySpin.rotation.y >= Math.PI * 2) {
-        mercurySpin.rotation.y = 0
-    }
-
-    mercurySpin.rotation.y += config.autoRotation.speed
-}
-
-/**
- * 本函数用于创建轨道路径
- * @return {THREE.LineLoop} 轨道路径实例
- * */
-function createOrbitPath() {
-    const points = []
-    for (let i = 0; i < config.orbit.path.segment; i++) {
-        const theta = (i / config.orbit.path.segment) * Math.PI * 2
-        const position = calcMercuryPosition(theta)
-        const x = position.x
-        const z = position.z
-        points.push(new THREE.Vector3(x, 0, z))
-    }
-
-    const geometry = new THREE.BufferGeometry().setFromPoints(points)
-    const material = new THREE.LineBasicMaterial({
-        color: config.orbit.path.color,
-        linewidth: config.orbit.path.lineWidth,
-        transparent: config.orbit.path.transparent,
-    })
-
-    if(material.transparent) {
-        material.opacity = config.orbit.path.opacity
-    }
-
-    const orbit = new THREE.LineLoop(geometry, material)
-    orbit.name = config.orbit.name
-
-    return orbit
+    orbitAngle.value += config.orbit.speed
+    setOrbitalGroupPosition(mercuryRoot, orbitAngle, config.orbit.semiMajorAxis, config.orbit.eccentricity)
 }

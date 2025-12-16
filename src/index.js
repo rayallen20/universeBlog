@@ -11,6 +11,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
 import {initMercury, mercuryAxis, updateMercury} from "./mercury";
+import {initVenus, updateVenus, venusAxis} from "./venus";
 
 document.body.appendChild(renderer.domElement)
 
@@ -51,6 +52,13 @@ try {
     console.error('初始化水星模型失败:', err)
 }
 
+try {
+    await initVenus()
+    scene.add(venusAxis)
+} catch (err) {
+    console.error('初始化金星模型失败:', err)
+}
+
 const composer = new EffectComposer(renderer)
 composer.addPass(new RenderPass(scene, camera))
 
@@ -82,6 +90,9 @@ function animate() {
 
     // 更新水星位置和自转
     updateMercury()
+
+    // 更新金星位置和自转
+    updateVenus()
 
     composer.render(scene, camera)
 }
