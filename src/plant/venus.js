@@ -53,16 +53,17 @@ venusAxis.name = config.axisName
 /**
  * @type {THREE.Group} 金星公转层
  * */
-const venusRoot = new THREE.Group()
+export const venusRoot = new THREE.Group()
 venusRoot.name = config.groupName
-venusAxis.add(venusRoot)
+venusRoot.userData.bodyType = 'planet'
+venusRoot.userData.label = 'Venus'
+venusRoot.userData.semiMajorAxis = config.orbit.semiMajorAxis
 
 /**
  * @type {THREE.Group} 金星自转层
  * */
 const venusSpin = new THREE.Group()
 venusSpin.name = config.spinName
-venusRoot.add(venusSpin)
 
 /**
  * @type {THREE.Group|null} 金星模型

@@ -12,3 +12,30 @@ canvas {
     width: 100%;
     height: 100%;
 }
+
+#overlay {
+    position: fixed;
+    /* inset属性: 子元素相对父元素的边距 */
+    inset: 0;
+    /* 让鼠标穿透overlay层 这样不会影响到THREE.js的控制器 */
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#hoverLabel {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#hoverLabel .card {
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+}

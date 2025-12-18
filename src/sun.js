@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import {loadGLTF} from "./lib/loadGLTF";
 import {scaleModel} from "./lib/scalModel";
 import {centerModelToOrigin} from "./lib/centerModelToOrigin";
-import {pickables} from "./base/raycaster";
 
 /**
  * 本常量用于定义太阳模型的相关配置
@@ -60,8 +59,10 @@ sunAxis.name = config.axisName
 /**
  * @type {THREE.Group} 太阳组 用于包含太阳模型和相关光源
  * */
-const sunRoot = new THREE.Group()
+export const sunRoot = new THREE.Group()
 sunRoot.name = config.groupName
+sunRoot.userData.bodyType = 'sun'
+sunRoot.userData.label = 'Sun'
 
 /**
  * 本函数用于初始化太阳模型 并将其添加到sunRoot组中

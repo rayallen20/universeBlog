@@ -53,8 +53,11 @@ mercuryAxis.name = config.axisName
 /**
  * @type {THREE.Group} 水星公转层 用于控制水星的公转
  * */
-const mercuryRoot = new THREE.Group()
+export const mercuryRoot = new THREE.Group()
 mercuryRoot.name = config.groupName
+mercuryRoot.userData.bodyType = 'planet'
+mercuryRoot.userData.label = 'Mercury'
+mercuryRoot.userData.semiMajorAxis = config.orbit.semiMajorAxis
 
 /**
  * @type {THREE.Group} 水星自转层 用于控制水星的自转
