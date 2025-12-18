@@ -1,18 +1,18 @@
 import * as THREE from 'three'
-import {loadGLTF} from "./lib/loadGLTF";
-import {scaleModel} from "./lib/scalModel";
-import {centerModelToOrigin} from "./lib/centerModelToOrigin";
-import {initOrbitalGroupPosition} from "./planetHelper/position";
-import {setOrbitalGroupPosition} from "./planetHelper/revolution";
-import {setSpinAutoRotation} from "./planetHelper/autoRotation";
-import {createOrbitPath} from "./planetHelper/orbitPath";
-import {setShadowCastReceive} from "./lib/setShadow";
+import {loadGLTF} from "../lib/loadGLTF";
+import {scaleModel} from "../lib/scalModel";
+import {centerModelToOrigin} from "../lib/centerModelToOrigin";
+import {initOrbitalGroupPosition} from "./helper/position";
+import {setOrbitalGroupPosition} from "./helper/revolution";
+import {setSpinAutoRotation} from "./helper/autoRotation";
+import {createOrbitPath} from "./helper/orbitPath";
+import {setShadowCastReceive} from "../lib/setShadow";
 
-const config = {
+export const config = {
     groupName: 'MercuryRoot',
     axisName: 'MercuryAxis',
     spinName: 'MercurySpin',
-    path: '../assets/mercury/scene.gltf',
+    path: '../../assets/mercury/scene.gltf',
     scale: {
         size: 1,
     },
@@ -124,9 +124,13 @@ export async function initMercury() {
 
 /**
  * 本函数用于更新水星的自转和公转状态
+ * @param {boolean} needRevolution 是否需要更新公转位置
  * */
-export function updateMercury() {
-    setRevolution()
+export function updateMercury(needRevolution) {
+    if (needRevolution) {
+        setRevolution()
+    }
+
     setSpinAutoRotation(mercurySpin, config.autoRotation.speed)
 }
 

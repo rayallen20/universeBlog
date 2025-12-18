@@ -2,16 +2,17 @@ import * as THREE from 'three'
 import {loadGLTF} from "./lib/loadGLTF";
 import {scaleModel} from "./lib/scalModel";
 import {centerModelToOrigin} from "./lib/centerModelToOrigin";
+import {pickables} from "./base/raycaster";
 
 /**
  * 本常量用于定义太阳模型的相关配置
  * @type {Object}
  * */
-const config = {
+export const config = {
     // 太阳组名称
-    groupName: 'SunRoot',
+    groupName: 'sunRoot',
     // 太阳自转轴名称
-    axisName: 'SunAxis',
+    axisName: 'sunAxis',
     // 太阳模型的路径
     path: '../assets/sun/scene.gltf',
     // 太阳模型自发光相关配置
@@ -42,6 +43,10 @@ const config = {
         decay: 2,
         // 是否投射阴影
         castShadow: true,
+        shadow: {
+            // 阴影贴图偏差 设置该值是为了减少阴影失真和闪烁
+            bias: -0.00005,
+        },
     },
     position: new THREE.Vector3(0, 0, 0),
 }
@@ -57,8 +62,6 @@ sunAxis.name = config.axisName
  * */
 const sunRoot = new THREE.Group()
 sunRoot.name = config.groupName
-
-sunAxis.add(sunRoot)
 
 /**
  * 本函数用于初始化太阳模型 并将其添加到sunRoot组中
@@ -89,6 +92,10 @@ export async function initSun() {
     // 旋转自转轴以实现倾斜效果
     // 也就是说视觉上看起来的倾斜 是先旋转自转轴 再进行自转的
     sunAxis.rotation.z = THREE.MathUtils.degToRad(config.autoRotation.dipAngle)
+
+    sunAxis.clear()
+    sunAxis.add(sunRoot)
+    sunAxis.position.set(config.position.x, config.position.y, config.position.z)
 
     // 用于确认自转轴方向的辅助线
     // const axisHelper = new THREE.AxesHelper(15)
@@ -139,14 +146,7 @@ function createLight() {
         config.light.decay
         )
     light.castShadow = config.light.castShadow
-
-    light.shadow.mapSize.set(2048, 2048) // 先拉高，方便确认是否有效
-    light.shadow.bias = -0.00005
-    light.shadow.normalBias = 0.01
-
-// 点光源阴影相机范围
-    light.shadow.camera.near = 0.1
-    light.shadow.camera.far = 2000  // 至少要大于金星轨道半径
+    light.shadow.bias = config.light.shadow.bias
 
     light.position.set(0, 0, 0)
     return light

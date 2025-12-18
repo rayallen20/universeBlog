@@ -1,14 +1,14 @@
 import * as THREE from 'three'
-import {loadGLTF} from "./lib/loadGLTF";
-import {scaleModel} from "./lib/scalModel";
-import {centerModelToOrigin} from "./lib/centerModelToOrigin";
-import {initOrbitalGroupPosition} from "./planetHelper/position";
-import {setOrbitalGroupPosition} from "./planetHelper/revolution";
-import {setSpinAutoRotation} from "./planetHelper/autoRotation";
-import {createOrbitPath} from "./planetHelper/orbitPath";
-import {setShadowCastReceive} from "./lib/setShadow";
+import {loadGLTF} from "../lib/loadGLTF";
+import {scaleModel} from "../lib/scalModel";
+import {centerModelToOrigin} from "../lib/centerModelToOrigin";
+import {initOrbitalGroupPosition} from "./helper/position";
+import {setOrbitalGroupPosition} from "./helper/revolution";
+import {setSpinAutoRotation} from "./helper/autoRotation";
+import {createOrbitPath} from "./helper/orbitPath";
+import {setShadowCastReceive} from "../lib/setShadow";
 
-const config = {
+export const config = {
     groupName: 'venusRoot',
     axisName: 'venusAxis',
     spinName: 'venusSpin',
@@ -122,8 +122,15 @@ export async function initVenus() {
     // venusAxis.add(axisHelper)
 }
 
-export function updateVenus() {
-    setRevolution()
+/**
+ * 本函数用于更新金星的自转和公转状态
+ * @param {boolean} needRevolution 是否需要更新公转位置
+ * */
+export function updateVenus(needRevolution) {
+    if (needRevolution) {
+        setRevolution()
+    }
+
     setSpinAutoRotation(venusSpin, config.autoRotation.speed)
 }
 
