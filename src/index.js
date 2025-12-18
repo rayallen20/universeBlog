@@ -101,13 +101,13 @@ function animate() {
     if (hoveredObject !== null) {
         needRevolution = false
     }
+    console.log(hoveredObject)
 
     // 更新水星位置和自转
     updateMercury(needRevolution)
 
     // 更新金星位置和自转
     updateVenus(needRevolution)
-
 
     composer.render(scene, camera)
 }
