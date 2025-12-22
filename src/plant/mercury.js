@@ -40,6 +40,10 @@ export const config = {
             opacity: 0.6,
         }
     },
+    label: {
+        bodyType: 'planet',
+        name: 'Mercury',
+    },
 }
 
 /**
@@ -53,11 +57,10 @@ mercuryAxis.name = config.axisName
 /**
  * @type {THREE.Group} 水星公转层 用于控制水星的公转
  * */
-export const mercuryRoot = new THREE.Group()
+const mercuryRoot = new THREE.Group()
 mercuryRoot.name = config.groupName
-mercuryRoot.userData.bodyType = 'planet'
-mercuryRoot.userData.label = 'Mercury'
-mercuryRoot.userData.semiMajorAxis = config.orbit.semiMajorAxis
+mercuryRoot.userData.bodyType = config.label.bodyType
+mercuryRoot.userData.label = config.label.name
 
 /**
  * @type {THREE.Group} 水星自转层 用于控制水星的自转

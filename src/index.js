@@ -9,12 +9,11 @@ import {createOrbitControls} from './base/controls'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
-import {initSun, setAutoRotation as setSunAutoRotation, sunAxis, sunRoot} from './sun.js'
+import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
 import {initMercury, mercuryAxis, updateMercury} from "./plant/mercury";
 import {initVenus, updateVenus, venusAxis} from "./plant/venus";
 import {findHoveringObject, initHoverListener, setPickAble} from "./base/raycaster";
-import {worldToScreen} from "./lib/worldToScreen";
-import {calcLabelOffset} from "./lib/calcLabelOffset";
+import {hiddenLabel, showLabel} from "./label/element";
 
 document.body.appendChild(renderer.domElement)
 
@@ -87,9 +86,6 @@ function onWindowResize() {
     composer.setSize(window.innerWidth, window.innerHeight)
 }
 
-const labelElement = document.querySelector('#hoverLabel')
-const cardElement = document.querySelector('.card')
-
 function animate() {
     requestAnimationFrame(animate)
     controls.update()
@@ -100,14 +96,15 @@ function animate() {
     // 设置太阳自转
     setSunAutoRotation()
 
-    // 查找鼠标悬停的物体
+    // 查找鼠标悬停的物体并显示标签
     const hoveredObject = findHoveringObject(camera)
+
     let needRevolution = true
+    hiddenLabel()
+
     if (hoveredObject !== null) {
         needRevolution = false
         showLabel(hoveredObject)
-    } else {
-        labelElement.style.display = 'none'
     }
 
     // 更新水星位置和自转
@@ -117,28 +114,6 @@ function animate() {
     updateVenus(needRevolution)
 
     composer.render(scene, camera)
-}
-
-function showLabel(hoveredObject) {
-    const hoveredBodyPosition = worldToScreen(hoveredObject, camera, renderer.domElement)
-
-    // 若物体在镜头后方 则不需要显示标签
-    if (hoveredBodyPosition.ndc.z > 1) {
-        labelElement.style.display = 'none'
-        return
-    }
-
-    // 获取标签的偏移量
-    const offset = calcLabelOffset(hoveredObject, sunRoot, camera, renderer.domElement)
-    const dx = hoveredBodyPosition.screenX + offset.x
-    const dy = hoveredBodyPosition.screenY + offset.y
-    // 更新内容
-    cardElement.textContent = hoveredObject.userData.label
-
-    // 设置标签位置
-    labelElement.style.display = 'block'
-    labelElement.style.transform = `translate(${dx}px, ${dy}px)`
-    console.log(labelElement.style.transform)
 }
 
 animate()

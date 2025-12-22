@@ -18,13 +18,13 @@ const sunToHoveredBodyDirection = new THREE.Vector3()
 
 /**
  * 本函数用于计算鼠标悬停在星球上时要显示的div在屏幕上的偏移量
- * @param {THREE.Group} hoveredRoot 鼠标悬停的物体
- * @param {THREE.Group} sunRoot 太阳组
+ * @param {THREE.Object3D} hoveredRoot 鼠标悬停的物体
+ * @param {THREE.Group} sunAxis 太阳组
  * @param {THREE.PerspectiveCamera} camera 用于渲染场景的相机
  * @param {HTMLElement} domElement 渲染场景的DOM元素 (通常是canvas)
  * @return {{x: number, y: number}} 返回标签在屏幕上的偏移量 (单位: 像素)
  * */
-export function calcLabelOffset(hoveredRoot, sunRoot, camera, domElement) {
+export function calcOffset(hoveredRoot, sunAxis, camera, domElement) {
     let offset = {
         x: 0,
         y: 0,
@@ -38,7 +38,7 @@ export function calcLabelOffset(hoveredRoot, sunRoot, camera, domElement) {
     }
 
     // 若悬停的物体为行星 则沿太阳到行星的方向偏移
-    sunRoot.getWorldPosition(sunPosition)
+    sunAxis.getWorldPosition(sunPosition)
     hoveredRoot.getWorldPosition(hoveredBodyPosition)
 
     sunToHoveredBodyDirection.copy(hoveredBodyPosition).sub(sunPosition)
@@ -52,7 +52,7 @@ export function calcLabelOffset(hoveredRoot, sunRoot, camera, domElement) {
 
     const offsetScreen = calcPlantOffset(camera, domElement)
 
-    const offsetPx = 80
+    const offsetPx = 50
     offset.x = offsetScreen.outwardScreenUnitX * offsetPx
     offset.y = offsetScreen.outwardScreenUnitY * offsetPx
 
@@ -76,7 +76,7 @@ function calcPlantOffset(camera, domElement) {
     // step2. 在该位置上加上一个沿太阳到行星方向的偏移量
     // Tips: 可以理解为是从行星位置出发 沿太阳到行星的方向再前进stepInWorldUnits个单位
     // Tips: 由于太阳到行星的方向一定是"向外"的 所以我命名时使用了outward这个词
-    const stepInWorldUnits = 1.0
+    const stepInWorldUnits = 0.2
     const outwardStepWorldPosition = hoveredBodyPosition.clone().add(
         sunToHoveredBodyDirection.clone().multiplyScalar(stepInWorldUnits)
     )

@@ -41,7 +41,11 @@ export const config = {
             // 轨道路径透明度值
             opacity: 0.6,
         }
-    }
+    },
+    label: {
+        bodyType: 'planet',
+        name: 'Venus',
+    },
 }
 
 /**
@@ -53,11 +57,10 @@ venusAxis.name = config.axisName
 /**
  * @type {THREE.Group} 金星公转层
  * */
-export const venusRoot = new THREE.Group()
+const venusRoot = new THREE.Group()
 venusRoot.name = config.groupName
-venusRoot.userData.bodyType = 'planet'
-venusRoot.userData.label = 'Venus'
-venusRoot.userData.semiMajorAxis = config.orbit.semiMajorAxis
+venusRoot.userData.bodyType = config.label.bodyType
+venusRoot.userData.label = config.label.name
 
 /**
  * @type {THREE.Group} 金星自转层

@@ -29,7 +29,7 @@ const pickAbleCollection = []
  * */
 export function setPickAble() {
     sunAxis.traverse((object) => {
-        if (object.name === sunConfig.groupName) {
+        if (object.name === sunConfig.axisName) {
             pickAbleCollection.push(object)
         }
     })

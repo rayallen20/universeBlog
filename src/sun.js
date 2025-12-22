@@ -48,6 +48,10 @@ export const config = {
         },
     },
     position: new THREE.Vector3(0, 0, 0),
+    label: {
+        bodyType: 'sun',
+        name: 'Sun',
+    },
 }
 
 /**
@@ -55,14 +59,14 @@ export const config = {
  * */
 export const sunAxis = new THREE.Group()
 sunAxis.name = config.axisName
+sunAxis.userData.bodyType = config.label.bodyType
+sunAxis.userData.label = config.label.name
 
 /**
  * @type {THREE.Group} 太阳组 用于包含太阳模型和相关光源
  * */
-export const sunRoot = new THREE.Group()
+const sunRoot = new THREE.Group()
 sunRoot.name = config.groupName
-sunRoot.userData.bodyType = 'sun'
-sunRoot.userData.label = 'Sun'
 
 /**
  * 本函数用于初始化太阳模型 并将其添加到sunRoot组中

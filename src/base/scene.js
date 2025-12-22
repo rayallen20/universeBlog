@@ -40,7 +40,7 @@ function loadEXR() {
 /**
  * 本函数用于初始化场景的环境贴图
  * @param {THREE.WebGLRenderer} renderer 渲染器实例
- * @return {void}
+ * @return {Promise<void>}
  * @throws {Error} 如果加载EXR贴图失败则抛出错误
  * */
 export async function initSceneEnvironment(renderer) {
