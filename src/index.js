@@ -10,8 +10,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
-import {initMercury, mercuryAxis, updateMercury} from "./plant/mercury";
-import {initVenus, updateVenus, venusAxis} from "./plant/venus";
+import {initMercury, mercuryAxis, updateMercury} from "./planet/mercury";
+import {initVenus, updateVenus, venusAxis} from "./planet/venus";
 import {findHoveringObject, initHoverListener, setPickAble} from "./base/raycaster";
 import {hiddenLabel, showLabel} from "./label/element";
 

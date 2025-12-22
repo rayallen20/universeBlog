@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 import {findAncestorByName} from "../lib/findAncestorByName";
 import {config as sunConfig, sunAxis} from "../sun";
-import {config as mercuryConfig, mercuryAxis} from "../plant/mercury";
-import {config as venusConfig, venusAxis} from "../plant/venus";
+import {config as mercuryConfig, mercuryAxis} from "../planet/mercury";
+import {config as venusConfig, venusAxis} from "../planet/venus";
 
 /**
  * @type {THREE.Raycaster} 射线投射器 用于实现鼠标悬停在某个物体上时的交互效果
