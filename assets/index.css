@@ -39,3 +39,32 @@ canvas {
     font-size: 12px;
     white-space: nowrap;
 }
+
+#panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 45vw;
+    height: 100vh;
+    /* 面板是可点击的 */
+    pointer-events: auto;
+    display: none;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+}
+
+#panel .close {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    pointer-events: auto;
+}
+
+#panel .content-container .title {
+    margin: 48px 16px 12px;
+}
+
+#panel .content-container .content {
+    margin: 0 16px;
+    line-height: 1.6;
+}

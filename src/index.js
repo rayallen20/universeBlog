@@ -12,8 +12,10 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
 import {initMercury, mercuryAxis, updateMercury} from "./planet/mercury";
 import {initVenus, updateVenus, venusAxis} from "./planet/venus";
-import {findHoveringObject, initHoverListener, setPickAble} from "./base/raycaster";
-import {hiddenLabel, showLabel} from "./label/element";
+import {findHoveringObject, initHoverListener, setPickAble} from "./interaction/hover";
+import {hiddenLabel, showLabel} from "./ui/label/label";
+import {initPanel} from "./ui/panel";
+import {clearFocus, focusOn, initFocus, isFocused, updateFocus} from "./interaction/focus";
 
 document.body.appendChild(renderer.domElement)
 
@@ -67,6 +69,11 @@ setPickAble()
 // 初始化鼠标悬停监听器
 initHoverListener(renderer.domElement)
 
+// 初始化面板
+initPanel(clearFocus)
+initFocus(camera, controls)
+
+// 后期处理 设置光晕效果
 const composer = new EffectComposer(renderer)
 composer.addPass(new RenderPass(scene, camera))
 
@@ -86,6 +93,39 @@ function onWindowResize() {
     composer.setSize(window.innerWidth, window.innerHeight)
 }
 
+// 点击聚焦
+let downX = 0
+let downY = 0
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+    downX = event.clientX
+    downY = event.clientY
+})
+
+renderer.domElement.addEventListener('pointerup', (event) => {
+    const upX = event.clientX
+    const upY = event.clientY
+
+    const dx = upX - downX
+    const dy = upY - downY
+
+    const moved = Math.hypot(dx, dy)
+    // 超过某个阈值则视为拖拽而非点击
+    if (moved > 5) {
+        return
+    }
+
+    const picked = findHoveringObject(camera)
+    if (picked !== null) {
+        focusOn(picked)
+        return
+    }
+
+    // 如果没有拾取到任何物体 则取消聚焦
+    clearFocus()
+})
+
+let lastTime = performance.now()
 function animate() {
     requestAnimationFrame(animate)
     controls.update()
@@ -96,16 +136,28 @@ function animate() {
     // 设置太阳自转
     setSunAutoRotation()
 
+    hiddenLabel()
     // 查找鼠标悬停的物体并显示标签
     const hoveredObject = findHoveringObject(camera)
-
-    let needRevolution = true
-    hiddenLabel()
-
-    if (hoveredObject !== null) {
-        needRevolution = false
+    if (hoveredObject !== null && !isFocused()) {
         showLabel(hoveredObject)
     }
+
+    let needRevolution = true
+    // 若鼠标悬停在某个天体上 则停止公转
+    if (hoveredObject !== null) {
+        needRevolution = false
+    }
+
+    // 若处于聚焦状态 则停止公转
+    if (isFocused()) {
+        needRevolution = false
+    }
+
+    const now = performance.now()
+    const deltaMs = (now - lastTime) / 1000
+    lastTime = now
+    updateFocus(deltaMs)
 
     // 更新水星位置和自转
     updateMercury(needRevolution)

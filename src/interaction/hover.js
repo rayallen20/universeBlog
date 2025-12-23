@@ -133,4 +133,3 @@ export function findHoveringObject(camera) {
 
     return currentHovered
 }
-

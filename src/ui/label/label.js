@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import {worldToScreen} from "../lib/worldToScreen";
-import {camera} from "../base/camera";
-import {renderer} from "../base/renderer";
+import {worldToScreen} from "../../lib/worldToScreen";
+import {camera} from "../../base/camera";
+import {renderer} from "../../base/renderer";
 import {calcOffset} from "./calcOffset";
-import {sunAxis} from "../sun";
+import {sunAxis} from "../../sun";
 
 /**
  * @type {HTMLDivElement} 鼠标悬停时要显示的标签
@@ -11,7 +11,7 @@ import {sunAxis} from "../sun";
 const labelElement = document.querySelector('#hoverLabel')
 
 /**
- * @type {HTMLDivElement}
+ * @type {HTMLDivElement} 标签中要显示的卡片元素
  * */
 const cardElement = document.querySelector('.card')
 
