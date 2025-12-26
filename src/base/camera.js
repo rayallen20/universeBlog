@@ -3,8 +3,10 @@ import * as THREE from 'three'
 /**
  * 本常量用于定义透视相机实例
  * @type {THREE.PerspectiveCamera}
+ * Tips: 参数示意见doc/PerspectiveCamera.png
  * */
 export const camera = new THREE.PerspectiveCamera(
+    // Tips: 注意这里的单位是角度而非弧度
     45,
     window.innerWidth / window.innerHeight,
     0.1,

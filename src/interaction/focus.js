@@ -3,15 +3,20 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls'
 import {hidePanel, showPanel} from "../ui/panel";
 
 const state = {
+    // 标志当前是否处于聚焦状态的标量
     focused: false,
+    // 当前被聚焦的物体
     targetObject: null,
-    t: 0,
+    // 动画已运行时间
+    elapsedTime: 0,
+    // 动画总时长
     duration: 0.6,
+    // 标志当前是否正在播放动画的标量
     isAnimating: false,
     // 动画播放的模式
     // focus: 聚焦到某个天体
     // clear: 从聚焦状态回退
-    mode: 'focus',
+    mode: '',
 }
 
 /**
@@ -25,47 +30,54 @@ let camera
 let controls
 
 /**
- * @type {THREE.Vector3} 被聚焦物体的位置
+ * @type {THREE.Vector3} 被聚焦物体的世界坐标
  * */
 const targetPosition = new THREE.Vector3()
 
 /**
- * @type {THREE.Vector3} 相机起始位置
+ * @type {THREE.Vector3} 相机动画起点位置的世界坐标
+ * Tips: 这个起点既用于从不聚焦到聚焦的起点,也用于从聚焦到不聚焦的起点
  * */
 const fromCameraPosition = new THREE.Vector3()
 
 /**
- * @type {THREE.Vector3} 相机目标位置
+ * @type {THREE.Vector3} 相机动画终点位置的世界坐标
+ * Tips: 和起点相同,这个终点既用于从不聚焦到聚焦的终点,也用于从聚焦到不聚焦的终点
  * */
 const toCameraPosition = new THREE.Vector3()
 
 /**
- * @type {THREE.Vector3} 相机向左(x轴负方向)的方向(因为要让球体在屏幕中央偏右的位置)
+ * @type {THREE.Vector3} 相机从被聚焦的天体向左移动的方向(因为要让球体在屏幕中央偏右的位置)
  * */
 const cameraLeftDirection = new THREE.Vector3()
 
 /**
  * @type {THREE.Vector3} 相机向前(z轴负方向)的方向(因为要让球体充满屏幕)
+ * 也可以理解为是从被聚焦的天体指向相机的方向
  * */
 const cameraForwardDirection = new THREE.Vector3()
 
 /**
- * @type {THREE.Vector3} 控制器target的起始位置
+ * @type {THREE.Vector3} 轨道中心的起始位置
  * */
 const fromControlsTarget = new THREE.Vector3()
 
 /**
- * @type {THREE.Vector3} 控制器target的目标位置
+ * @type {THREE.Vector3} 轨道中心的目标位置
  * */
 const toControlsTarget = new THREE.Vector3()
 
 /**
  * @tpye {THREE.Vector3} 相机相对于天体位置的偏移量
+ * Tips: 可以理解为cameraOffset控制了"相机从哪里看"
  * */
 const cameraOffset = new THREE.Vector3()
 
 /**
- * @tpye {THREE.Vector3} 目标相对于天体位置的偏移量
+ * @tpye {THREE.Vector3} 轨道中心相对于被聚焦的天体中心的偏移量
+ * Tips: 这里由于交互是聚焦时让被聚焦天体出现在屏幕中央偏右的位置,所以需要让轨道中心位置向左移动一些
+ * Tips: 从原理上讲,即使设置了camera.lookAt(),相机也会围绕controls.target位置旋转
+ * Tips: 所以可以理解为targetOffset控制了"相机看向哪里"
  * */
 const targetOffset = new THREE.Vector3()
 
@@ -75,12 +87,12 @@ const targetOffset = new THREE.Vector3()
 const worldUp = new THREE.Vector3(0, 1, 0)
 
 /**
- * @type {THREE.Vector3} 相机的聚焦前的位置(清除聚焦时需要恢复到该位置)
+ * @type {THREE.Vector3} 相机在聚焦前的位置(清除聚焦时需要将相机从当前位置恢复到该位置)
  * */
 const homeCameraPosition = new THREE.Vector3(0, 0, 0)
 
 /**
- * @type {THREE.Vector3} 轨道控制器的聚焦前的target位置(清除聚焦时需要恢复到该位置)
+ * @type {THREE.Vector3} 轨道中心在聚焦前的target位置(清除聚焦时需要将轨道中心从当前位置恢复到该位置)
  * */
 const homeControlsTarget = new THREE.Vector3(0, 0, 0)
 
@@ -111,51 +123,72 @@ export function focusOn(object) {
 
     state.focused = true
     state.targetObject = object
-    state.t = 0
+    state.elapsedTime = 0
     state.isAnimating = true
 
     object.getWorldPosition(targetPosition)
 
-    // 记录本次动画开始时的相机位置和控制器target位置
+    // 记录本次动画开始时的相机位置和轨道中心位置
     fromCameraPosition.copy(camera.position)
     fromControlsTarget.copy(controls.target)
 
-    // 记录相机和控制器target的起始位置(取消聚焦时要恢复到该位置)
-    homeCameraPosition.copy(camera.position)
-    homeControlsTarget.copy(controls.target)
+    // Tips: 这里的判断是因为若不判断,
+    // Tips: 则在聚焦模式下,若再次点击天体,则会更新相机和轨道中心的起始位置为聚焦时的位置
+    // Tips: 就无法回到聚焦前的位置了
+    if (state.mode !== 'focus') {
+        // 记录相机和轨道中心的起始位置(取消聚焦时要恢复到该位置)
+        homeCameraPosition.copy(camera.position)
+        homeControlsTarget.copy(controls.target)
+        state.mode = 'focus'
+    }
 
-    state.mode = 'focus'
-
-    // 控制相机看向target的方向
+    // 计算从被聚焦物体看向相机的方向
+    // 被聚焦物体看向相机的方向 = 相机位置 - 被聚焦物体位置
+    // 最后的单位化是为了表述方向 因为后续有单独的一个阈值控制相机在该方向上移动的距离
     cameraForwardDirection.copy(camera.position).sub(targetPosition).normalize()
     // Tips: cross(a, b)的结果是垂直于a和b的向量
     // Tips: 所以这里用 世界上方向 叉乘 相机前方向
     // Tips: 再反转方向 得到相机左方向
     cameraLeftDirection.copy(worldUp).cross(cameraForwardDirection).multiplyScalar(-1).normalize()
 
-    // 根据被点击的天体的大小计算合适的相机位置
+    // 根据被聚焦的天体的大小计算合适的相机位置
+    // step1. 计算被聚焦天体的半径
     const box = new THREE.Box3().setFromObject(state.targetObject)
     const sphere = new THREE.Sphere()
     box.getBoundingSphere(sphere)
     const radius = Math.max(sphere.radius, 1e-6)
 
+    // step2. 计算相机到被聚焦天体的距离
+    // Tips: 在透视相机中,若想让一个半径为radius的球体正好充满屏幕,相机到目标中心的距离为:
+    // Tips: distance = radius / tan(fov/2)
+    // Tips: 其中fov为垂直方向的视场角,单位为弧度(所以需要先把相机的fov从角度转换为弧度)
     const fovRad = THREE.MathUtils.degToRad(camera.fov)
-    const fitDist = radius / Math.tan(fovRad * 0.5)
+    const fitDistance = radius / Math.tan(fovRad * 0.5)
 
     // Tips: 缩放因子越小 则相机离目标越近 天体在屏幕上显示得越大
     const zoomFactor = 0.75
-    const desireDistance = fitDist * zoomFactor
+    const desireDistance = fitDistance * zoomFactor
 
-    // 让天体靠右: 把相机的target位置向左移动一些
+    // 让天体靠右: 把轨道中心位置向左移动一些
     // panel在屏幕横向的占比
     const panelRatio = 0.5
     // panel和天体之间的边距占比
     const margin = 0.05
-    const desiredNdcX = Math.min(panelRatio + margin, 0.85)
+    // 计算横向占比
+    const horizontalShiftRatio = Math.min(panelRatio + margin, 0.85)
 
     // 计算水平视角
+    // Tips: tan(fov/2) * aspect 相当于就是: 宽/相机到目标的距离
+    // Tips: 这个值表示的是 tan(水平视场角/2)
+    // Tips: 然后再通过atan()函数反求出(水平视场角/2) arctan(A) = tan(α) 其中A是数值 α为角度
+    // Tips: 最后乘以2得到完整的水平视场角
     const fovX = 2 * Math.atan(Math.tan(fovRad * 0.5) * camera.aspect)
-    const targetShift = desireDistance * Math.tan(fovX * 0.5) * desiredNdcX
+    //
+    // tan(fovX/2): 水平方向的长度 / 相机到目标的距离
+    // desireDistance: 相机到目标的距离
+    // horizontalShiftRatio: panel+外边距的比例
+    // targetShift: 轨道中心需要移动的距离
+    const targetShift = desireDistance * Math.tan(fovX * 0.5) * horizontalShiftRatio
 
     cameraOffset.
     copy(cameraForwardDirection).
@@ -191,7 +224,7 @@ export function clearFocus() {
     toCameraPosition.copy(homeCameraPosition)
     toControlsTarget.copy(homeControlsTarget)
 
-    state.t = 0
+    state.elapsedTime = 0
     state.isAnimating = true
     state.mode = 'clear'
 
@@ -212,7 +245,7 @@ function easeInOut(t) {
 }
 
 /**
- * 本函数用于更新聚焦状态
+ * 本函数用于更新聚焦状态 从起点位置到终点位置
  * @param {number} dtSeconds 帧间隔时间 单位: 秒
  * */
 export function updateFocus(dtSeconds) {
@@ -220,9 +253,9 @@ export function updateFocus(dtSeconds) {
         return
     }
 
-    state.t += dtSeconds
-    const alpha = Math.min(state.t / state.duration, 1)
-    const k = easeInOut(alpha)
+    state.elapsedTime += dtSeconds
+    const progress = Math.min(state.elapsedTime / state.duration, 1)
+    const k = easeInOut(progress)
 
     if (state.mode === 'focus') {
         if (state.targetObject === null) {
@@ -230,22 +263,21 @@ export function updateFocus(dtSeconds) {
             return
         }
 
-        // 持续跟随目标位置
+        // Tips: 这里我是出于扩展性的考虑,直接实现成目标位置会变化的版本了
+        // Tips: 所以每一帧都重新获取目标位置并更新终点位置
+        // step1. 获取目标位置
         state.targetObject.getWorldPosition(targetPosition)
 
-        // 终点跟随目标位置更新
+        // step2. 根据获取到的目标位置重新计算终点位置
+        // Tips: 相机终点位置 = 被聚焦物体的世界坐标 + 相机偏移量
         toCameraPosition.copy(targetPosition).add(cameraOffset)
+        // Tips: 轨道中心终点位置 = 被聚焦物体的世界坐标 + 轨道中心偏移量
         toControlsTarget.copy(targetPosition).add(targetOffset)
 
         state.focused = true
     }
 
-    // clear模式
-    // camera.position.lerpVectors(fromCameraPosition, toCameraPosition, k)
-    // controls.target.lerpVectors(fromControlsTarget, toControlsTarget, k)
-    // controls.update()
-
-    // 更新相机位置和控制器target位置
+    // 更新相机位置和轨道中心位置
     // Tips: lerpVectors()方法用于在两个向量之间进行线性插值
     // Tips: 第一个参数是起始向量 第二个参数是目标向量 第三个参数是插值因子(0~1之间)
     // Tips: 当k=0时 结果等于起始向量 当k=1时 结果等于目标向量
@@ -258,16 +290,15 @@ export function updateFocus(dtSeconds) {
     controls.update()
 
     // 动画完成
-    if (alpha >= 1) {
-        state.t = state.duration
+    if (progress >= 1) {
+        state.elapsedTime = state.duration
         state.isAnimating = false
+        controls.enabled = true
 
         // 动画结束后再清除状态
         if (state.mode === 'clear') {
             state.focused = false
             state.targetObject = null
         }
-
-        controls.enabled = true
     }
 }
