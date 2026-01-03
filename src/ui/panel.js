@@ -45,6 +45,8 @@ export function initPanel(onClose) {
             onClose()
         }
     })
+
+    inited = true
 }
 
 /**

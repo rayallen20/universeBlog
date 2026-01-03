@@ -7,6 +7,7 @@ import {setOrbitalGroupPosition} from "./helper/revolution";
 import {setSpinAutoRotation} from "./helper/autoRotation";
 import {createOrbitPath} from "./helper/orbitPath";
 import {setShadowCastReceive} from "../lib/setShadow";
+import {listMeshes} from "../lib/listMeshes";
 
 export const config = {
     groupName: 'venusRoot',
@@ -82,6 +83,11 @@ let orbitAngle = {
 }
 
 /**
+ * @type {Array<THREE.Mesh>} 可拾取对象数组 用于存储金星模型中所有可以被鼠标悬停检测的物体
+ * */
+export let pickableMeshes = []
+
+/**
  * 本函数用于初始化金星模型组 (模型组包括: 轨道组 -> 公转组 -> 自转组 -> 模型)
  * @return {Promise<void>}
  * @throws {Error} 如果加载金星模型失败则抛出错误
@@ -100,6 +106,11 @@ export async function initVenus() {
 
     scaleModel(venusModel, config.scale.size)
     centerModelToOrigin(venusModel)
+
+    pickableMeshes = listMeshes(venusModel)
+    for (const pickableMesh of pickableMeshes) {
+        pickableMesh.userData.anchorPointName = config.groupName
+    }
 
     // 按层级挂载对象
     venusSpin.clear()

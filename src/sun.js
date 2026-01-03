@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import {loadGLTF} from "./lib/loadGLTF";
 import {scaleModel} from "./lib/scalModel";
 import {centerModelToOrigin} from "./lib/centerModelToOrigin";
+import {listMeshes} from "./lib/listMeshes";
 
 /**
  * 本常量用于定义太阳模型的相关配置
@@ -69,6 +70,11 @@ const sunRoot = new THREE.Group()
 sunRoot.name = config.groupName
 
 /**
+ * @type {Array<THREE.Mesh>} 可拾取对象数组 用于存储太阳模型中所有可以被鼠标悬停检测的物体
+ * */
+export let pickableMeshes = []
+
+/**
  * 本函数用于初始化太阳模型 并将其添加到sunRoot组中
  * @return {Promise<void>}
  * @throws {Error} 如果加载太阳模型失败则抛出错误
@@ -86,6 +92,14 @@ export async function initSun() {
     setEmissive(model)
     scaleModel(model, config.scale.size)
     centerModelToOrigin(model)
+
+    pickableMeshes = listMeshes(model)
+    for (const pickableMesh of pickableMeshes) {
+        // 这里的自定义属性是因为在显示label时,需要找一个静止的物体作为锚点,来计算label的位置
+        // 而所有的天体模型都会有自转,所以使用自转轴组作为锚点.这里将自转轴组对象的名称写入到悬停的Mesh上,
+        // 是为了在后续的label显示逻辑中,能够通过悬停的Mesh找到对应的自转轴组对象
+        pickableMesh.userData.anchorPointName = config.axisName
+    }
 
     sunRoot.clear()
     sunRoot.add(model)

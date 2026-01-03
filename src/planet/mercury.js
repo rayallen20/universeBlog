@@ -7,6 +7,7 @@ import {setOrbitalGroupPosition} from "./helper/revolution";
 import {setSpinAutoRotation} from "./helper/autoRotation";
 import {createOrbitPath} from "./helper/orbitPath";
 import {setShadowCastReceive} from "../lib/setShadow";
+import {listMeshes} from "../lib/listMeshes";
 
 export const config = {
     groupName: 'MercuryRoot',
@@ -82,6 +83,11 @@ let orbitAngle = {
 }
 
 /**
+ * @type {Array<THREE.Mesh>} 可拾取对象数组 用于存储水星模型中所有可以被鼠标悬停检测的物体
+ * */
+export let pickableMeshes = []
+
+/**
  * 本函数用于初始化水星模型组 (模型组包括: 轨道组 -> 公转组 -> 自转组 -> 模型本体)
  * @return {Promise<void>}
  * @throws {Error} 如果加载水星模型失败则抛出错误
@@ -102,6 +108,11 @@ export async function initMercury() {
     scaleModel(mercuryModel, config.scale.size)
     // 居中模型
     centerModelToOrigin(mercuryModel)
+
+    pickableMeshes = listMeshes(mercuryModel)
+    for (const pickableMesh of pickableMeshes) {
+        pickableMesh.userData.anchorPointName = config.groupName
+    }
 
     // 按层级挂载对象
     mercurySpin.clear()

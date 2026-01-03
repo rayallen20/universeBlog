@@ -4,11 +4,20 @@ import {camera} from "../../base/camera";
 import {renderer} from "../../base/renderer";
 import {calcOffset} from "./calcOffset";
 import {sunAxis} from "../../sun";
+import {state} from "../../interaction/hover";
 
 /**
  * @type {HTMLDivElement} 鼠标悬停时要显示的标签
  * */
-const labelElement = document.querySelector('#hoverLabel')
+export const labelElement = document.querySelector('#hoverLabel')
+
+labelElement.addEventListener('pointerenter', (event) => {
+    state.pointer.isLabelHover = true
+})
+
+labelElement.addEventListener('pointerleave', (event) => {
+    state.pointer.isLabelHover = false
+})
 
 /**
  * @type {HTMLDivElement} 标签中要显示的卡片元素
@@ -45,4 +54,60 @@ export function showLabel(hoveredObject) {
  * */
 export function hiddenLabel() {
     labelElement.style.display = 'none'
+}
+
+/**
+ * 本函数用于判断给定的点是否靠近label所表示的矩形区域
+ * @param {DOMRect} rect label所表示的矩形区域
+ * @param {{x: number, y: number} } pointerPx 需要判断的点的屏幕坐标
+ * @param {number} enterDistancePx 判定为靠近的距离阈值 (单位: 像素)
+ * @return {boolean} 如果点靠近矩形区域则返回true 否则返回false
+ * */
+export function isNearLabel(rect, pointerPx, enterDistancePx) {
+    const distance = pointToRectDistancePx(rect, pointerPx)
+    return distance <= enterDistancePx
+}
+
+/**
+ * 本函数用于判断给定的点是否远离label所表示的矩形区域
+ * @param {DOMRect} rect label所表示的矩形区域
+ * @param {{x: number, y: number} } pointerPx 需要判断的点的屏幕坐标
+ * @param {number} exitDistancePx 判定为远离的距离阈值 (单位: 像素)
+ * @return {boolean} 如果点远离矩形区域则返回true 否则返回false
+ * */
+export function isFarLabel(rect, pointerPx, exitDistancePx) {
+    const distance = pointToRectDistancePx(rect, pointerPx)
+    return distance >= exitDistancePx
+}
+
+/**
+ * 本函数用于计算给定位置的点到label所表示的矩形区域的距离
+ * @param {DOMRect} rect label所表示的矩形区域
+ * @param {{x: number, y: number} } point 需要计算距离的点的屏幕坐标
+ * @return {number} 返回点到矩形区域的距离 (单位: 像素)
+ * */
+function pointToRectDistancePx(rect, point) {
+    // 屏幕坐标下的四条边
+    const left = rect.left
+    const right = rect.right
+    const top = rect.top
+    const bottom = rect.bottom
+
+    // dx: 点到left的距离 或 点到right的距离
+    let dx = 0
+    if (point.x < left) {
+        dx = left - point.x
+    } else if (point.x > right) {
+        dx = point.x - right
+    }
+
+    // dy: 点到top的距离 或 点到bottom的距离
+    let dy = 0
+    if (point.y < top) {
+        dy = top - point.y
+    } else if (point.y > bottom) {
+        dy = point.y - bottom
+    }
+
+    return Math.hypot(dx, dy)
 }

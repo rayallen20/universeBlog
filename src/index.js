@@ -2,20 +2,23 @@ import * as THREE from 'three'
 import '../assets/index.css'
 import {renderer} from './base/renderer'
 import {camera} from './base/camera'
-import {scene, initSceneEnvironment} from './base/scene'
-import {skySphere, initSkySphereTexture, setAutoRotation as setSkySphereAutoRotation} from './skySphere'
+import {initSceneEnvironment, scene} from './base/scene'
+import {initSkySphereTexture, setAutoRotation as setSkySphereAutoRotation, skySphere} from './skySphere'
 import {axesHelper} from './base/axesHelper'
 import {createOrbitControls} from './base/controls'
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer'
-import { RenderPass } from 'three/addons/postprocessing/RenderPass'
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass'
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer'
+import {RenderPass} from 'three/addons/postprocessing/RenderPass'
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass'
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
 import {initMercury, mercuryAxis, updateMercury} from "./planet/mercury";
 import {initVenus, updateVenus, venusAxis} from "./planet/venus";
-import {findHoveringObject, initHoverListener, setPickAble} from "./interaction/hover";
-import {hiddenLabel, showLabel} from "./ui/label/label";
+import {hiddenLabel, isFarLabel, isNearLabel, labelElement, showLabel} from "./ui/label/label";
 import {initPanel} from "./ui/panel";
-import {clearFocus, focusOn, initFocus, isFocused, updateFocus} from "./interaction/focus";
+import {clearFocus, focusOn, initFocus, updateFocus} from "./interaction/focus";
+import {shouldFreezeRevolution, shouldShowLabel, state, tickHover} from "./interaction/hover";
+import {getNDCCoordinate, setLeaveCoordinate} from "./lib/pointer";
+import {findHoveringObject, setPickAble} from "./base/raycaster";
+import {findAncestorByName} from "./lib/findAncestorByName";
 
 document.body.appendChild(renderer.domElement)
 
@@ -66,8 +69,6 @@ try {
 
 // 设置可拾取对象
 setPickAble()
-// 初始化鼠标悬停监听器
-initHoverListener(renderer.domElement)
 
 // 初始化面板
 initPanel(clearFocus)
@@ -115,7 +116,7 @@ renderer.domElement.addEventListener('pointerup', (event) => {
         return
     }
 
-    const picked = findHoveringObject(camera)
+    const picked = findHoveringObject(state.pointer.ndcCoordinate, camera)
     if (picked !== null) {
         focusOn(picked)
         return
@@ -125,10 +126,29 @@ renderer.domElement.addEventListener('pointerup', (event) => {
     clearFocus()
 })
 
+renderer.domElement.addEventListener('pointerenter', (event) => {
+    state.pointer.inCanvas = true
+})
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+    // 防御性措施: 有些情况下pointerenter不触发但pointermove会触发
+    state.pointer.inCanvas = true
+    state.pointer.hasEverMoved = true
+
+    getNDCCoordinate(event.clientX, event.clientY, renderer.domElement, state.pointer.ndcCoordinate)
+
+    state.pointer.screenPx.x = event.clientX
+    state.pointer.screenPx.y = event.clientY
+})
+
+renderer.domElement.addEventListener('pointerleave', (event) => {
+    state.pointer.inCanvas = false
+    setLeaveCoordinate(state.pointer.ndcCoordinate)
+})
+
 let lastTime = performance.now()
 function animate() {
     requestAnimationFrame(animate)
-    controls.update()
 
     // 设置天空球自转
     setSkySphereAutoRotation()
@@ -136,36 +156,44 @@ function animate() {
     // 设置太阳自转
     setSunAutoRotation()
 
-    hiddenLabel()
-    // 查找鼠标悬停的物体并显示标签
-    const hoveredObject = findHoveringObject(camera)
-    if (hoveredObject !== null && !isFocused()) {
-        showLabel(hoveredObject)
-    }
-
-    let needRevolution = true
-    // 若鼠标悬停在某个天体上 则停止公转
-    if (hoveredObject !== null) {
-        needRevolution = false
-    }
-
-    // 若处于聚焦状态 则停止公转
-    if (isFocused()) {
-        needRevolution = false
-    }
+    controls.update()
 
     const now = performance.now()
+    tickHover(now, camera, renderer.domElement)
+    const freeze = shouldFreezeRevolution()
+    if (shouldShowLabel()) {
+        const axisName = state.active.entity.userData.anchorPointName
+        const activeObject = findAncestorByName(state.active.entity, axisName)
+        showLabel(activeObject)
+
+        state.activeLabel.rect = labelElement.getBoundingClientRect()
+        // 按"严进宽出"的迟滞逻辑判定是否靠近label
+        // 严进: 鼠标靠近label时,需要靠近距离较小才能判定为靠近
+        // 宽出: 鼠标远离label时,需要离开的比较远才能判定为远离
+        if (!state.pointer.isNearLabel) {
+            state.pointer.isNearLabel = isNearLabel(state.activeLabel.rect, state.pointer.screenPx, state.activeLabel.enterDistancePx)
+        } else {
+            state.pointer.isNearLabel = !isFarLabel(state.activeLabel.rect, state.pointer.screenPx, state.activeLabel.exitDistancePx)
+        }
+    } else {
+        hiddenLabel()
+        state.activeLabel.rect = null
+        state.pointer.isNearLabel = false
+    }
+
     const deltaMs = (now - lastTime) / 1000
     lastTime = now
     updateFocus(deltaMs)
 
     // 更新水星位置和自转
-    updateMercury(needRevolution)
+    updateMercury(!freeze)
 
     // 更新金星位置和自转
-    updateVenus(needRevolution)
+    updateVenus(!freeze)
 
     composer.render(scene, camera)
 }
 
 animate()
+
+// console.log(scene.children)
