@@ -1,0 +1,79 @@
+.borderLayer {
+    position: absolute;
+    inset: 0;
+    /* 边框层最靠下 */
+    z-index: 10;
+}
+
+.seg {
+    position: absolute;
+    /* TODO: 3. 左侧的上/中/下 3段边框需要分别的颜色渐变 */
+    background: var(--border);
+}
+
+.borderLayer .topSystem {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    /* 需要容纳向下折的 16px */
+    height: 17px;
+
+    pointer-events: none; /* overlay 场景避免挡交互 */
+}
+
+.borderLayer .topSvg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.borderLayer .bottomSystem {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 17px;
+    pointer-events: none;
+}
+
+.borderLayer .bottomSvg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.borderLayer .leftRail {
+    /*
+    leftRail只是为了组织左上/中/下3个不同粗细的边框,左边框内部允许用leftRail
+    作为"局部坐标系"(被设置了绝对定位的子元素,其定位参照物即为最近的已定位祖先元素),
+    来确定位置 */
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--leftRail-width);
+}
+
+.borderLayer .leftRail .leftTop {
+    top: 0;
+    left: 0;
+    width: var(--leftRail-top-width);
+    height: var(--leftRail-top-height);
+}
+
+.borderLayer .leftRail .leftMid {
+    top: 162px;
+    /* 细线是在粗线内侧的 */
+    right: 0;
+    width: var(--leftRail-middle-width);
+    height: var(--leftRail-middle-height);
+}
+
+.borderLayer .leftRail .leftBottom {
+    bottom: 0;
+    left: 0;
+    width: var(--leftRail-bottom-width);
+    height: var(--leftRail-bottom-height);
+}

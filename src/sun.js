@@ -51,7 +51,8 @@ export const config = {
     position: new THREE.Vector3(0, 0, 0),
     label: {
         bodyType: 'sun',
-        name: 'Sun',
+        name: '太阳',
+        intro: '一段太阳的介绍文字',
     },
 }
 
@@ -62,6 +63,7 @@ export const sunAxis = new THREE.Group()
 sunAxis.name = config.axisName
 sunAxis.userData.bodyType = config.label.bodyType
 sunAxis.userData.label = config.label.name
+sunAxis.userData.intro = config.label.intro
 
 /**
  * @type {THREE.Group} 太阳组 用于包含太阳模型和相关光源

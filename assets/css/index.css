@@ -4,6 +4,14 @@
     box-sizing: border-box;
 }
 
+:root {
+    --w: 426px;
+    --h: 286px;
+
+    /* 纯色阶段: 先用统一色,后面再换成设计稿中的颜色体系 */
+    --border: #20c6d8;
+}
+
 canvas {
     display: block;
     position: fixed;
@@ -20,25 +28,6 @@ canvas {
     /* 让鼠标穿透overlay层 这样不会影响到THREE.js的控制器 */
     pointer-events: none;
     z-index: 9999;
-}
-
-#hoverLabel {
-    display: none;
-    position: fixed;
-    /*label层允许鼠标交互 否则无法点里边的链接了*/
-    pointer-events: auto;
-    left: 0;
-    top: 0;
-    z-index: 9999;
-}
-
-#hoverLabel .card {
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    font-size: 12px;
-    white-space: nowrap;
 }
 
 #panel {

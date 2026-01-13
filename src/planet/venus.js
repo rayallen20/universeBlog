@@ -45,7 +45,8 @@ export const config = {
     },
     label: {
         bodyType: 'planet',
-        name: 'Venus',
+        name: '金星',
+        intro: '一段金星的介绍文字',
     },
 }
 
@@ -62,6 +63,7 @@ const venusRoot = new THREE.Group()
 venusRoot.name = config.groupName
 venusRoot.userData.bodyType = config.label.bodyType
 venusRoot.userData.label = config.label.name
+venusRoot.userData.intro = config.label.intro
 
 /**
  * @type {THREE.Group} 金星自转层

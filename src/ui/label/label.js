@@ -5,11 +5,12 @@ import {renderer} from "../../base/renderer";
 import {calcOffset} from "./calcOffset";
 import {sunAxis} from "../../sun";
 import {state} from "../../interaction/hover";
+import {focusOn} from "../../interaction/focus";
 
 /**
  * @type {HTMLDivElement} 鼠标悬停时要显示的标签
  * */
-export const labelElement = document.querySelector('#hoverLabel')
+export const labelElement = document.querySelector('.labelWrap')
 
 labelElement.addEventListener('pointerenter', (event) => {
     state.pointer.isLabelHover = true
@@ -20,9 +21,29 @@ labelElement.addEventListener('pointerleave', (event) => {
 })
 
 /**
- * @type {HTMLDivElement} 标签中要显示的卡片元素
+ * @type {HTMLDivElement} 标签中的标题元素
  * */
-const cardElement = document.querySelector('.card')
+const titleElement = document.querySelector('.contentLayer .content h2')
+
+/**
+ * @type {HTMLParagraphElement} 标签中的介绍元素
+ * */
+const introElement = document.querySelector('.contentLayer .content p')
+
+/**
+ * @type {HTMLButtonElement} 标签中的聚焦按钮元素
+ * */
+const focusOnButtonElement = document.querySelector('.contentLayer .bottomButton')
+focusOnButtonElement.addEventListener('click', focusOnBody)
+
+/**
+ * 本函数用于聚焦到当前标签所表示的天体
+ * @param {PointerEvent} event 鼠标事件对象
+ * */
+function focusOnBody(event) {
+    focusOn(state.active.entity)
+    hiddenLabel()
+}
 
 /**
  * 本函数用于当鼠标悬停在天体上时 显示对应的标签
@@ -33,7 +54,7 @@ export function showLabel(hoveredObject) {
 
     // 若物体在镜头后方 则不需要显示标签
     if (hoveredBodyPosition.ndc.z > 1) {
-        labelElement.style.display = 'none'
+        hiddenLabel()
         return
     }
 
@@ -41,19 +62,27 @@ export function showLabel(hoveredObject) {
     const offset = calcOffset(hoveredObject, sunAxis, camera, renderer.domElement)
     const dx = hoveredBodyPosition.screenX + offset.x
     const dy = hoveredBodyPosition.screenY + offset.y
+
     // 更新内容
-    cardElement.textContent = hoveredObject.userData.label
+    titleElement.textContent = hoveredObject.userData.label
+    introElement.textContent = hoveredObject.userData.intro
 
     // 设置标签位置
-    labelElement.style.display = 'block'
-    labelElement.style.transform = `translate(${dx}px, ${dy}px)`
+    labelElement.style.opacity = '1'
+    labelElement.style.visibility = 'visible'
+
+    labelElement.style.left = dx + 'px'
+    labelElement.style.top = dy + 'px'
+    labelElement.style.pointerEvents = 'auto'
 }
 
 /**
  * 本函数用于隐藏标签
  * */
 export function hiddenLabel() {
-    labelElement.style.display = 'none'
+    labelElement.style.opacity = '0'
+    labelElement.style.visibility = 'hidden'
+    labelElement.style.pointerEvents = 'none'
 }
 
 /**

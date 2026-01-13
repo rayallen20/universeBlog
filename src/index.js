@@ -1,5 +1,12 @@
 import * as THREE from 'three'
-import '../assets/index.css'
+import '../assets/css/index.css'
+import '../assets/css/font.css'
+import '../assets/css/labelWrap.css'
+import '../assets/css/labelShape.css'
+import '../assets/css/borderLayer.css'
+import '../assets/css/innerDecorLayer.css'
+import '../assets/css/outerDecorLayer.css'
+import '../assets/css/contentLayer.css'
 import {renderer} from './base/renderer'
 import {camera} from './base/camera'
 import {initSceneEnvironment, scene} from './base/scene'
@@ -14,7 +21,7 @@ import {initMercury, mercuryAxis, updateMercury} from "./planet/mercury";
 import {initVenus, updateVenus, venusAxis} from "./planet/venus";
 import {hiddenLabel, isFarLabel, isNearLabel, labelElement, showLabel} from "./ui/label/label";
 import {initPanel} from "./ui/panel";
-import {clearFocus, focusOn, initFocus, updateFocus} from "./interaction/focus";
+import {clearFocus, focusOn, initFocus, isFocused, updateFocus} from "./interaction/focus";
 import {shouldFreezeRevolution, shouldShowLabel, state, tickHover} from "./interaction/hover";
 import {getNDCCoordinate, setLeaveCoordinate} from "./lib/pointer";
 import {findHoveringObject, setPickAble} from "./base/raycaster";
@@ -119,6 +126,7 @@ renderer.domElement.addEventListener('pointerup', (event) => {
     const picked = findHoveringObject(state.pointer.ndcCoordinate, camera)
     if (picked !== null) {
         focusOn(picked)
+        hiddenLabel()
         return
     }
 
@@ -160,6 +168,31 @@ function animate() {
 
     const now = performance.now()
     tickHover(now, camera, renderer.domElement)
+
+    // 聚焦的优先级高于悬停 换言之,只要处于聚焦状态,则不需要检测悬停
+    let freeze = isFocused()
+    if (!isFocused()) {
+        freeze = checkHover()
+    }
+
+    const deltaSecond = (now - lastTime) / 1000
+    lastTime = now
+    updateFocus(deltaSecond)
+
+    // 更新水星位置和自转
+    updateMercury(!freeze)
+
+    // 更新金星位置和自转
+    updateVenus(!freeze)
+
+    composer.render(scene, camera)
+}
+
+/**
+ * 本函数用于检测当前鼠标是否悬停在某个天体及其label上
+ * @return {boolean} 若需要冻结公转则返回true,否则返回false
+ * */
+function checkHover() {
     const freeze = shouldFreezeRevolution()
     if (shouldShowLabel()) {
         const axisName = state.active.entity.userData.anchorPointName
@@ -181,17 +214,7 @@ function animate() {
         state.pointer.isNearLabel = false
     }
 
-    const deltaMs = (now - lastTime) / 1000
-    lastTime = now
-    updateFocus(deltaMs)
-
-    // 更新水星位置和自转
-    updateMercury(!freeze)
-
-    // 更新金星位置和自转
-    updateVenus(!freeze)
-
-    composer.render(scene, camera)
+    return freeze
 }
 
 animate()

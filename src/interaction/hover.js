@@ -201,7 +201,7 @@ function enterSticky(nowMs) {
  * @param {HTMLElement} domElement 渲染场景的DOM元素 (通常是canvas)
  * */
 export function tickHover(nowMs, camera, domElement) {
-    console.log(state.phase)
+    // console.log(state.phase)
 
     // 逐帧刷新当前激活天体的投影信息
     flushProjection(camera, domElement)

@@ -43,7 +43,8 @@ export const config = {
     },
     label: {
         bodyType: 'planet',
-        name: 'Mercury',
+        name: '水星',
+        intro: '一段水星的介绍文字',
     },
 }
 
@@ -62,6 +63,7 @@ const mercuryRoot = new THREE.Group()
 mercuryRoot.name = config.groupName
 mercuryRoot.userData.bodyType = config.label.bodyType
 mercuryRoot.userData.label = config.label.name
+mercuryRoot.userData.intro = config.label.intro
 
 /**
  * @type {THREE.Group} 水星自转层 用于控制水星的自转
