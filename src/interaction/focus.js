@@ -119,7 +119,6 @@ export function isFocused() {
  * @param {THREE.Object3D} object 要聚焦的物体
  * */
 export function focusOn(object) {
-    console.log(object)
     controls.enabled = false
 
     state.focused = true

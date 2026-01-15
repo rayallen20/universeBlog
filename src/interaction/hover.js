@@ -104,9 +104,9 @@ export const state = {
         exitDistancePx: 14,
     },
     sticky: {
-        enterEdgeDistancePx: 16,
-        exitEdgeDistancePx: 24,
-        expireMs: 1000,
+        enterEdgeDistancePx: 24,
+        exitEdgeDistancePx: 36,
+        expireMs: 1500,
         minHoldMs: 300,
         lastHitAt: 0,
         startedAt: 0,

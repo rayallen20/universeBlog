@@ -6,6 +6,7 @@ import {calcOffset} from "./calcOffset";
 import {sunAxis} from "../../sun";
 import {state} from "../../interaction/hover";
 import {focusOn} from "../../interaction/focus";
+import {findAncestorByName} from "../../lib/findAncestorByName";
 
 /**
  * @type {HTMLDivElement} 鼠标悬停时要显示的标签
@@ -41,7 +42,15 @@ focusOnButtonElement.addEventListener('click', focusOnBody)
  * @param {PointerEvent} event 鼠标事件对象
  * */
 function focusOnBody(event) {
-    focusOn(state.active.entity)
+    // 有可能在label隐藏的动画期间(也就是opacity从1变为0的过程中)点击了按钮
+    // 此时状态机已经进入了idle状态 只是label还没有完全隐藏 所以这里要判一下空 避免出现NPE问题
+    if (state.active.entity === null) {
+        return
+    }
+
+    const axisName = state.active.entity.userData.anchorPointName
+    const focusObject = findAncestorByName(state.active.entity, axisName)
+    focusOn(focusObject)
     hiddenLabel()
 }
 

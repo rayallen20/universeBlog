@@ -1,12 +1,19 @@
 import * as THREE from 'three'
 import '../assets/css/index.css'
 import '../assets/css/font.css'
-import '../assets/css/labelWrap.css'
-import '../assets/css/labelShape.css'
-import '../assets/css/borderLayer.css'
-import '../assets/css/innerDecorLayer.css'
-import '../assets/css/outerDecorLayer.css'
-import '../assets/css/contentLayer.css'
+import '../assets/css/reset.css'
+import '../assets/css/label/labelWrap.css'
+import '../assets/css/label/labelShape.css'
+import '../assets/css/label/borderLayer.css'
+import '../assets/css/label/innerDecorLayer.css'
+import '../assets/css/label/outerDecorLayer.css'
+import '../assets/css/label/contentLayer.css'
+import '../assets/css/panel/panelWrap.css'
+import '../assets/css/panel/contentWrap.css'
+import '../assets/css/panel/shortContentWrap.css'
+import '../assets/css/panel/longContentWrap.css'
+import '../assets/css/common/bottomButton.css'
+import '../assets/css/common/leftTrapezoid.css'
 import {renderer} from './base/renderer'
 import {camera} from './base/camera'
 import {initSceneEnvironment, scene} from './base/scene'
@@ -20,7 +27,6 @@ import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
 import {initMercury, mercuryAxis, updateMercury} from "./planet/mercury";
 import {initVenus, updateVenus, venusAxis} from "./planet/venus";
 import {hiddenLabel, isFarLabel, isNearLabel, labelElement, showLabel} from "./ui/label/label";
-import {initPanel} from "./ui/panel";
 import {clearFocus, focusOn, initFocus, isFocused, updateFocus} from "./interaction/focus";
 import {shouldFreezeRevolution, shouldShowLabel, state, tickHover} from "./interaction/hover";
 import {getNDCCoordinate, setLeaveCoordinate} from "./lib/pointer";
@@ -78,7 +84,6 @@ try {
 setPickAble()
 
 // 初始化面板
-initPanel(clearFocus)
 initFocus(camera, controls)
 
 // 后期处理 设置光晕效果
@@ -125,7 +130,9 @@ renderer.domElement.addEventListener('pointerup', (event) => {
 
     const picked = findHoveringObject(state.pointer.ndcCoordinate, camera)
     if (picked !== null) {
-        focusOn(picked)
+        const axisName = picked.userData.anchorPointName
+        const focusObject = findAncestorByName(picked, axisName)
+        focusOn(focusObject)
         hiddenLabel()
         return
     }

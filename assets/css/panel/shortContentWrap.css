@@ -1,0 +1,40 @@
+.contentWrap .shortContentWrap {
+    width: 70%;
+    /*background: red;*/
+    margin-bottom: 70px;
+}
+
+.contentWrap .shortContentWrap h2 {
+    margin-bottom: 16px;
+    font-family: "Source Han Serif CN", serif;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 900;
+    line-height: 40px;
+    letter-spacing: 2px;
+    /*background: darkgoldenrod;*/
+}
+
+.contentWrap .shortContentWrap .cutOffLine {
+    margin-bottom: 16px;
+    width: 60px;
+    height: 3px;
+    background: var(--border);
+    clip-path: polygon(
+            6px 0,
+            60px 0,
+            54px 3px,
+            0 3px
+    );
+}
+
+.contentWrap .shortContentWrap p {
+    max-height: 160px;
+    overflow: hidden;
+    font-family: "Source Han Serif CN", serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 32px;
+    letter-spacing: 1px;
+}

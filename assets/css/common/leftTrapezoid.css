@@ -1,14 +1,4 @@
-.innerDecorLayer {
-    position: absolute;
-    inset: 0;
-    /* 装饰层在边框层上方,可以遮挡边框 */
-    z-index: 20;
-}
-
-.innerDecorLayer .leftTrapezoid {
-    position: absolute;
-    top: 26px;
-    left: 3px;
+.leftTrapezoid {
     width: 8px;
     height: 33px;
     /* TODO: 2. 这个小梯形的颜色渐变(UI设计稿中的只有整个一个外边框的渐变) */

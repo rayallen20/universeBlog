@@ -1,0 +1,46 @@
+.contentWrap .longContentWrap {
+    width: 100%;
+    height: 306px;
+    margin-bottom: 40px;
+}
+
+.contentWrap .longContentWrap .flexWrap {
+    width: 100%;
+    height: 100%;
+    /*background: yellow;*/
+    --gap: 70px;
+    display: flex;
+    justify-content: space-between;
+    /* 当条目多了时可以使用align-content 如果条目少的话考虑使用row-gap */
+    align-content: space-between;
+    flex-wrap: wrap;
+}
+
+.contentWrap .longContentWrap .flexWrap .flexItem {
+    display: flex;
+    column-gap: 16px;
+    /*background: darkcyan;*/
+    /* 间距70px 每行固定显示2个弹性条目 */
+    flex: 0 0 calc((100% - var(--gap)) / 2);
+}
+
+/* 窄屏的情况下每行显示1个 */
+@media (max-width: 768px) {
+    .contentWrap .longContentWrap .flexWrap .flexItem {
+        flex-basis: 100%;
+    }
+}
+
+.contentWrap .longContentWrap .flexWrap .flexItem a {
+    font-family: "Source Han Serif CN", serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 33px;
+    letter-spacing: 1px;
+    transition: 0.2s;
+}
+
+.contentWrap .longContentWrap .flexWrap .flexItem a:hover {
+    color: #51EEFF;
+}
