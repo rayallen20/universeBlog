@@ -32,6 +32,11 @@ import {shouldFreezeRevolution, shouldShowLabel, state, tickHover} from "./inter
 import {getNDCCoordinate, setLeaveCoordinate} from "./lib/pointer";
 import {findHoveringObject, setPickAble} from "./base/raycaster";
 import {findAncestorByName} from "./lib/findAncestorByName";
+import {earthAxis, initEarth, updateEarth} from "./planet/earth";
+import {initMars, marsAxis, updateMars} from "./planet/mars";
+import {initJupiter, jupiterAxis, updateJupiter} from "./planet/jupiter";
+import {initSaturn, saturnAxis, updateSaturn} from "./planet/saturn";
+import {initUranus, updateUranus, uranusAxis} from "./planet/uranus";
 
 document.body.appendChild(renderer.domElement)
 
@@ -80,6 +85,46 @@ try {
     console.error('初始化金星模型失败:', err)
 }
 
+// 初始化地球模型并添加到场景中
+try {
+    await initEarth()
+    scene.add(earthAxis)
+} catch (err) {
+    console.error('初始化地球模型失败:', err)
+}
+
+// 初始化火星模型并添加到场景中
+try {
+    await initMars()
+    scene.add(marsAxis)
+} catch (err) {
+    console.log('初始化火星模型失败:', err)
+}
+
+// 初始化木星模型并添加到场景中
+try {
+    await initJupiter()
+    scene.add(jupiterAxis)
+} catch (err) {
+    console.log('初始化木星模型失败:', err)
+}
+
+// 初始化土星模型并添加到场景中
+try {
+    await initSaturn()
+    scene.add(saturnAxis)
+} catch (err) {
+    console.log('初始化土星模型失败:', err)
+}
+
+// 初始化天王星模型并添加到场景中
+try {
+    await initUranus()
+    scene.add(uranusAxis)
+} catch (err) {
+    console.log('初始化天王星模型失败:', err)
+}
+
 // 设置可拾取对象
 setPickAble()
 
@@ -92,9 +137,9 @@ composer.addPass(new RenderPass(scene, camera))
 
 const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    40, // 光晕强度
-    3.5, // 光晕扩散半径
-    0.85 // 光晕阈值
+    2.2,    // 光晕强度
+    0.55,   // 光晕扩散半径
+    0.88    // 光晕阈值
 )
 composer.addPass(bloomPass)
 
@@ -104,6 +149,7 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
     composer.setSize(window.innerWidth, window.innerHeight)
+    bloomPass.setSize(window.innerWidth, window.innerHeight)
 }
 
 // 点击聚焦
@@ -191,6 +237,21 @@ function animate() {
 
     // 更新金星位置和自转
     updateVenus(!freeze)
+
+    // 更新地球位置和自转
+    updateEarth(!freeze)
+
+    // 更新火星位置和自转
+    updateMars(!freeze)
+
+    // 更新木星位置和自转
+    updateJupiter(!freeze)
+
+    // 更新土星位置和自转
+    updateSaturn(!freeze)
+
+    // 更新天王星位置和自转
+    updateUranus(!freeze)
 
     composer.render(scene, camera)
 }

@@ -17,10 +17,10 @@ export const config = {
     path: '../assets/sun/scene.gltf',
     // 太阳模型自发光相关配置
     emissive: {
-        // 自发光颜色
-        color: 0xffaa00,
+        // 自发光颜色 (略暖白的颜色)
+        color: 0xfff2d6,
         // 自发光强度
-        intensity: 3.0,
+        intensity: 3.5,
     },
     scale: {
         // 太阳模型缩放比例
@@ -33,14 +33,14 @@ export const config = {
         dipAngle: 7.25,
     },
     light: {
-        // 光源颜色
-        color: 0xffaa00,
+        // 光源颜色 和表面颜色一样接近暖白即可
+        color: 0xfff0c9,
         // 光源强度
         intensity: 1000,
         // 光源衰减距离
-        distance: 5000,
+        distance: 10000,
         // 光源衰减系数
-        decay: 2,
+        decay: 1.5,
         // 是否投射阴影
         castShadow: true,
         shadow: {

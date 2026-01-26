@@ -51,7 +51,7 @@ export const config = {
 }
 
 /**
- * @type {THREE.Group} 轨道面倾角层
+ * @type {THREE.Group} 金星轨道面倾角层
  * */
 export const venusAxis = new THREE.Group()
 venusAxis.name = config.axisName
@@ -77,7 +77,7 @@ venusSpin.name = config.spinName
 let venusModel = null
 
 /**
- * @type {Object} 金星公转角度 用于计算金星在轨道上的位置
+ * @type {{value: number}} 金星公转角度 用于计算金星在轨道上的位置
  * Tips: 这里使用对象包装是为了在函数中传递引用类型 从而实现角度值的更新
  * */
 let orbitAngle = {
