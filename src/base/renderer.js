@@ -8,7 +8,7 @@ export const renderer = new THREE.WebGLRenderer()
 // 开启阴影贴图
 renderer.shadowMap.enabled = true
 // 阴影柔和
-renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.shadowMap.type = THREE.PCFShadowMap
 // 设置输出的颜色空间为sRGB
 renderer.outputColorSpace = THREE.SRGBColorSpace
 // 使用ACESFilmicToneMapping作为色调映射方式

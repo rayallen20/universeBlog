@@ -6,7 +6,7 @@ import * as THREE from 'three'
  * */
 const config = {
     // 天空球的半径
-    radius: 1000,
+    radius: 2000,
     // 天空球的宽度分段数
     widthSegments: 64,
     // 天空球的高度分段数

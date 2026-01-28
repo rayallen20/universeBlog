@@ -15,7 +15,7 @@ export const config = {
     axisName: 'uranusAxis',
     path: '../assets/uranus/scene.gltf',
     scale: {
-        size: 24.7,
+        size: 10.5,
     },
     autoRotation: {
         speed: 0.13,

@@ -37,6 +37,8 @@ import {initMars, marsAxis, updateMars} from "./planet/mars";
 import {initJupiter, jupiterAxis, updateJupiter} from "./planet/jupiter";
 import {initSaturn, saturnAxis, updateSaturn} from "./planet/saturn";
 import {initUranus, updateUranus, uranusAxis} from "./planet/uranus";
+import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
+import {initNeptune, neptuneAxis, updateNeptune} from "./planet/neptune";
 
 document.body.appendChild(renderer.domElement)
 
@@ -125,31 +127,113 @@ try {
     console.log('初始化天王星模型失败:', err)
 }
 
+// 初始化海王星模型并添加到场景中
+try {
+    await initNeptune()
+    scene.add(neptuneAxis)
+} catch (err) {
+    console.log('初始化海王星模型失败:', err)
+}
+
 // 设置可拾取对象
 setPickAble()
 
 // 初始化面板
 initFocus(camera, controls)
 
-// 后期处理 设置光晕效果
-const composer = new EffectComposer(renderer)
-composer.addPass(new RenderPass(scene, camera))
+// 只让太阳参与bloom效果
+const BLOOM_SCENE = 1
+const bloomLayer = new THREE.Layers()
+bloomLayer.set(BLOOM_SCENE)
+sunAxis.traverse((obj) => {
+    obj.layers.enable(BLOOM_SCENE)
+})
 
+// 设置外行星的补光层
+const outerPlants = [jupiterAxis, saturnAxis, uranusAxis, neptuneAxis]
+const OUTER_LIGHT_LAYER = 2
+camera.layers.enable(OUTER_LIGHT_LAYER)
+outerPlants.forEach(axis => {
+    axis.traverse((obj) => {
+        obj.layers.enable(OUTER_LIGHT_LAYER)
+    })
+})
+
+// 后期处理 设置光晕效果
+const renderScene = new RenderPass(scene, camera)
+
+// bloomComposer: 只渲染Bloom结果
 const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     2.2,    // 光晕强度
     0.55,   // 光晕扩散半径
     0.88    // 光晕阈值
 )
-composer.addPass(bloomPass)
+const bloomComposer = new EffectComposer(renderer)
+bloomComposer.renderToScreen = false
+bloomComposer.addPass(renderScene)
+bloomComposer.addPass(bloomPass)
+
+// finalComposer: 将场景和Bloom结果合成
+const finalPass = new ShaderPass(
+    new THREE.ShaderMaterial({
+        uniforms: {
+            baseTexture: {value: null},
+            bloomTexture: {value: bloomComposer.renderTarget2.texture},
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform sampler2D baseTexture;
+            uniform sampler2D bloomTexture;
+            varying vec2 vUv;
+
+            void main() {
+                vec4 base = texture2D(baseTexture, vUv);
+                vec4 bloom = texture2D(bloomTexture, vUv);
+                gl_FragColor = base + bloom; // 叠加(Add)
+            }
+        `,
+    }),
+    'baseTexture',
+)
+
+const finalComposer = new EffectComposer(renderer)
+finalComposer.addPass(renderScene)
+finalComposer.addPass(finalPass)
+
+// bloom渲染时 将非太阳对象临时替换为黑色材质 避免产生bloom效果
+const darkMaterial = new THREE.MeshBasicMaterial({color: 0x000000})
+const materials = {}
+
+function darkenNonBloomed(obj) {
+    // 非bloom层的物体临时变黑 避免被bloom捕捉为光晕
+    if (obj.isMesh && !bloomLayer.test(obj.layers)) {
+        materials[obj.uuid] = obj.material
+        obj.material = darkMaterial
+    }
+}
+
+function restoreMaterial(obj) {
+    // 恢复物体材质
+    if (materials[obj.uuid]) {
+        obj.material = materials[obj.uuid]
+        delete materials[obj.uuid]
+    }
+}
 
 // 窗口缩放自适应
 window.addEventListener('resize', onWindowResize)
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
-    composer.setSize(window.innerWidth, window.innerHeight)
-    bloomPass.setSize(window.innerWidth, window.innerHeight)
+    bloomComposer.setSize(window.innerWidth, window.innerHeight)
+    finalComposer.setSize(window.innerWidth, window.innerHeight)
 }
 
 // 点击聚焦
@@ -253,7 +337,18 @@ function animate() {
     // 更新天王星位置和自转
     updateUranus(!freeze)
 
-    composer.render(scene, camera)
+    // 更新海王星位置和自转
+    updateNeptune(!freeze)
+
+    // composer.render(scene, camera)
+
+    // 先渲染bloom (把非太阳物体变黑 只剩太阳能产生bloom)
+    scene.traverse(darkenNonBloomed)
+    bloomComposer.render()
+    scene.traverse(restoreMaterial)
+
+    // 再渲染正常结果(将bloom结果叠加上去)
+    finalComposer.render()
 }
 
 /**

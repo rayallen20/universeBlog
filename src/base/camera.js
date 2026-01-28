@@ -11,7 +11,7 @@ export const camera = new THREE.PerspectiveCamera(
     window.innerWidth / window.innerHeight,
     0.1,
     // Tips: 远裁剪面的距离一定要远远大于天空球的半径 否则天空球会显示成一个黑色球体
-    2000
+    4000
 )
 
 /**

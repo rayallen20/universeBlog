@@ -7,6 +7,7 @@ import {pickableMeshes as marsPickableMeshes} from "../planet/mars";
 import {pickableMeshes as jupiterPickableMeshes} from "../planet/jupiter";
 import {pickableMeshes as saturnPickableMeshes} from "../planet/saturn";
 import {pickableMeshes as uranusPickableMeshes} from "../planet/uranus";
+import {pickableMeshes as neptunePickableMeshes} from "../planet/neptune";
 
 /**
  * @type {THREE.Raycaster} 射线投射器 用于检测鼠标悬停时与物体的交互
@@ -57,6 +58,10 @@ export function setPickAble() {
 
     for (const uranusPickableMesh of uranusPickableMeshes) {
         pickAbleCollection.push(uranusPickableMesh)
+    }
+
+    for (const neptunePickableMesh of neptunePickableMeshes) {
+        pickAbleCollection.push(neptunePickableMesh)
     }
 }
 

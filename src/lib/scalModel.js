@@ -12,7 +12,7 @@ export function scaleModel(model, scaleSize) {
     const box = new THREE.Box3().setFromObject(model)
     const size = new THREE.Vector3()
     box.getSize(size)
-    console.log('Box Size: ', size)
+    // console.log('Box Size: ', size)
 
     // 按最大边缩放模型
     const maxDim = Math.max(size.x, size.y, size.z) || 1
@@ -25,5 +25,5 @@ export function scaleModel(model, scaleSize) {
     const box2 = new THREE.Box3().setFromObject(model)
     const size2 = new THREE.Vector3()
     box2.getSize(size2)
-    console.log('Resized Box Size: ', size2)
+    // console.log('Resized Box Size: ', size2)
 }

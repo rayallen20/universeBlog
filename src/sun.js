@@ -33,19 +33,44 @@ export const config = {
         dipAngle: 7.25,
     },
     light: {
-        // 光源颜色 和表面颜色一样接近暖白即可
-        color: 0xfff0c9,
-        // 光源强度
-        intensity: 1000,
-        // 光源衰减距离
-        distance: 10000,
-        // 光源衰减系数
-        decay: 1.5,
-        // 是否投射阴影
-        castShadow: true,
-        shadow: {
-            // 阴影贴图偏差 设置该值是为了减少阴影失真和闪烁
-            bias: -0.00005,
+        // 主光源 负责照亮内行星(水星 金星 地球 火星)
+        principal: {
+            // 光源颜色 和表面颜色一样接近暖白即可
+            color: 0xfff0c9,
+            // 光源强度
+            intensity: 25000,
+            // 光源衰减距离
+            distance: 0,
+            // 光源衰减系数
+            decay: 2,
+            // 是否投射阴影
+            castShadow: true,
+            shadow: {
+                // 阴影贴图偏差 设置该值是为了减少阴影失真和闪烁
+                bias: -0.00002,
+                // 阴影贴图尺寸
+                mapSize: {
+                    x: 2048,
+                    y: 2048,
+                },
+                // 阴影相机参数
+                camera: {
+                    near: 0.5,
+                    far: 1200,
+                },
+                // 阴影采样时的法线偏移
+                normalBias: 0.02,
+                // 阴影模糊半径
+                radius: 2,
+            },
+        },
+        // 远补光 负责照亮外行星(木星 土星 天王星 海王星)
+        fill: {
+            color: 0xfff0c9,
+            intensity: 6,
+            distance: 0,
+            decay: 0,
+            castShadow: false,
         },
     },
     position: new THREE.Vector3(0, 0, 0),
@@ -107,8 +132,8 @@ export async function initSun() {
     sunRoot.add(model)
 
     // 创建太阳点光源并添加到sunRoot组中
-    const light = createLight()
-    sunRoot.add(light)
+    const lightGroup = createLightGroup()
+    sunRoot.add(lightGroup)
 
     // 旋转自转轴以实现倾斜效果
     // 也就是说视觉上看起来的倾斜 是先旋转自转轴 再进行自转的
@@ -157,20 +182,56 @@ function setEmissive(model) {
 
 /**
  * 本函数用于创建太阳的点光源
- * @return {THREE.PointLight} 太阳点光源实例
+ * @return {THREE.Group} 太阳点光源组
  * */
-function createLight() {
-    const light = new THREE.PointLight(
-        config.light.color,
-        config.light.intensity,
-        config.light.distance,
-        config.light.decay
-        )
-    light.castShadow = config.light.castShadow
-    light.shadow.bias = config.light.shadow.bias
+function createLightGroup() {
+    const lightGroup = new THREE.Group()
 
-    light.position.set(0, 0, 0)
-    return light
+    const principalLight = new THREE.PointLight(
+        config.light.principal.color,
+        config.light.principal.intensity,
+        config.light.principal.distance,
+        config.light.principal.decay
+    )
+    principalLight.castShadow = config.light.principal.castShadow
+    principalLight.shadow.bias = config.light.principal.shadow.bias
+    principalLight.shadow.mapSize.set(
+        config.light.principal.shadow.mapSize.x,
+        config.light.principal.shadow.mapSize.y
+    )
+    principalLight.shadow.camera.near = config.light.principal.shadow.camera.near
+    principalLight.shadow.camera.far  = config.light.principal.shadow.camera.far
+    principalLight.shadow.normalBias = config.light.principal.shadow.normalBias
+    principalLight.shadow.radius = config.light.principal.shadow.radius
+    principalLight.position.set(0, 0, 0)
+    lightGroup.add(principalLight)
+
+    const OUTER_LIGHT_LAYER = 2
+    const fillLight = new THREE.PointLight(
+        config.light.fill.color,
+        config.light.fill.intensity,
+        config.light.fill.distance,
+        config.light.fill.decay
+    )
+    // 只影响外行星补光层
+    fillLight.layers.set(OUTER_LIGHT_LAYER)
+    fillLight.castShadow = config.light.fill.castShadow
+    fillLight.position.set(0, 0, 0)
+    lightGroup.add(fillLight)
+
+    const hemi = new THREE.HemisphereLight(
+        0x223344, // 天空色：偏冷一点，模拟太空中微弱环境光
+        0x000000, // 地面色：几乎不需要
+        0.35      // 强度：建议 0.12 ~ 0.35 之间微调
+    )
+    hemi.layers.set(OUTER_LIGHT_LAYER)
+    lightGroup.add(hemi)
+
+    const amb = new THREE.AmbientLight(0x0b1520, 0.06) // 0.01 ~ 0.06
+    amb.layers.set(OUTER_LIGHT_LAYER)
+    lightGroup.add(amb)
+
+    return lightGroup
 }
 
 /**
