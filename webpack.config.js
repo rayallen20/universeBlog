@@ -1,13 +1,15 @@
 const path = require("path")
+const webpack = require("webpack")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const { VueLoaderPlugin } = require("vue-loader")
 
 module.exports = (env, argv) => {
     const isProd = argv.mode === "production"
 
     return {
         mode: isProd ? "production" : "development",
-        entry: { index: "./src/index.js" },
+        entry: { index: "./src/main.js" },
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: isProd ? "[name].[contenthash].js" : "[name].bundle.js",
@@ -25,6 +27,12 @@ module.exports = (env, argv) => {
             ],
         },
         plugins: [
+            new VueLoaderPlugin(),
+            new webpack.DefinePlugin({
+                __VUE_OPTIONS_API__: JSON.stringify(true),
+                __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
+                __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false),
+            }),
             new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, "public/index.html"),
                 filename: "index.html",
@@ -36,6 +44,10 @@ module.exports = (env, argv) => {
         ],
         module: {
             rules: [
+                {
+                    test: /\.vue$/,
+                    loader: "vue-loader",
+                },
                 {
                     test: /\.m?js$/,
                     exclude: /node_modules/,
@@ -57,6 +69,12 @@ module.exports = (env, argv) => {
                     generator: { filename: "fonts/[name][ext]" },
                 },
             ],
+        },
+        resolve: {
+            extensions: [".js", ".vue"],
+            alias: {
+                vue: "vue/dist/vue.runtime.esm-bundler.js",
+            },
         },
     }
 }
