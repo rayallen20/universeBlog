@@ -15,7 +15,7 @@ module.exports = (env, argv) => {
         },
         devtool: isProd ? false : "source-map",
         devServer: {
-            port: 4061,
+            port: 4060,
             compress: true,
             hot: true,
             historyApiFallback: true,

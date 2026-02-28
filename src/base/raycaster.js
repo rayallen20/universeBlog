@@ -1,13 +1,6 @@
 import * as THREE from 'three'
-import {pickableMeshes as sunPickableMeshes} from "../sun";
-import {pickableMeshes as venusPickableMeshes} from "../planet/venus";
-import {pickableMeshes as mercuryPickableMeshes} from "../planet/mercury";
-import {pickableMeshes as earthPickableMeshes} from "../planet/earth";
-import {pickableMeshes as marsPickableMeshes} from "../planet/mars";
-import {pickableMeshes as jupiterPickableMeshes} from "../planet/jupiter";
-import {pickableMeshes as saturnPickableMeshes} from "../planet/saturn";
-import {pickableMeshes as uranusPickableMeshes} from "../planet/uranus";
-import {pickableMeshes as neptunePickableMeshes} from "../planet/neptune";
+import {pickableMeshes as sunPickableMeshes} from "../sun"
+import {getAllPickableMeshes} from "../planet/planets"
 
 /**
  * @type {THREE.Raycaster} 射线投射器 用于检测鼠标悬停时与物体的交互
@@ -28,41 +21,8 @@ const pickAbleCollection = []
  * 本函数用于获取所有可拾取对象
  * */
 export function setPickAble() {
-    for (const sunPickableMesh of sunPickableMeshes) {
-        pickAbleCollection.push(sunPickableMesh)
-    }
-
-    for (const venusPickableMesh of venusPickableMeshes) {
-        pickAbleCollection.push(venusPickableMesh)
-    }
-
-    for (const mercuryPickableMesh of mercuryPickableMeshes) {
-        pickAbleCollection.push(mercuryPickableMesh)
-    }
-
-    for (const earthPickableMesh of earthPickableMeshes) {
-        pickAbleCollection.push(earthPickableMesh)
-    }
-
-    for (const marsPickableMesh of marsPickableMeshes) {
-        pickAbleCollection.push(marsPickableMesh)
-    }
-
-    for (const jupiterPickableMesh of jupiterPickableMeshes) {
-        pickAbleCollection.push(jupiterPickableMesh)
-    }
-
-    for (const saturnPickableMesh of saturnPickableMeshes) {
-        pickAbleCollection.push(saturnPickableMesh)
-    }
-
-    for (const uranusPickableMesh of uranusPickableMeshes) {
-        pickAbleCollection.push(uranusPickableMesh)
-    }
-
-    for (const neptunePickableMesh of neptunePickableMeshes) {
-        pickAbleCollection.push(neptunePickableMesh)
-    }
+    pickAbleCollection.push(...sunPickableMeshes)
+    pickAbleCollection.push(...getAllPickableMeshes())
 }
 
 /**

@@ -24,21 +24,14 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer'
 import {RenderPass} from 'three/addons/postprocessing/RenderPass'
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass'
 import {initSun, setAutoRotation as setSunAutoRotation, sunAxis} from './sun.js'
-import {initMercury, mercuryAxis, updateMercury} from "./planet/mercury";
-import {initVenus, updateVenus, venusAxis} from "./planet/venus";
+import {planets, getOuterPlanets} from "./planet/planets";
 import {hiddenLabel, isFarLabel, isNearLabel, labelElement, showLabel} from "./ui/label/label";
 import {clearFocus, focusOn, initFocus, isFocused, updateFocus} from "./interaction/focus";
 import {shouldFreezeRevolution, shouldShowLabel, state, tickHover} from "./interaction/hover";
 import {getNDCCoordinate, setLeaveCoordinate} from "./lib/pointer";
 import {findHoveringObject, setPickAble} from "./base/raycaster";
 import {findAncestorByName} from "./lib/findAncestorByName";
-import {earthAxis, initEarth, updateEarth} from "./planet/earth";
-import {initMars, marsAxis, updateMars} from "./planet/mars";
-import {initJupiter, jupiterAxis, updateJupiter} from "./planet/jupiter";
-import {initSaturn, saturnAxis, updateSaturn} from "./planet/saturn";
-import {initUranus, updateUranus, uranusAxis} from "./planet/uranus";
 import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
-import {initNeptune, neptuneAxis, updateNeptune} from "./planet/neptune";
 
 document.body.appendChild(renderer.domElement)
 
@@ -71,68 +64,14 @@ try {
     console.error('初始化太阳模型失败:', err)
 }
 
-// 初始化水星模型并添加到场景中
-try {
-    await initMercury()
-    scene.add(mercuryAxis)
-} catch (err) {
-    console.error('初始化水星模型失败:', err)
-}
-
-// 初始化金星模型并添加到场景中
-try {
-    await initVenus()
-    scene.add(venusAxis)
-} catch (err) {
-    console.error('初始化金星模型失败:', err)
-}
-
-// 初始化地球模型并添加到场景中
-try {
-    await initEarth()
-    scene.add(earthAxis)
-} catch (err) {
-    console.error('初始化地球模型失败:', err)
-}
-
-// 初始化火星模型并添加到场景中
-try {
-    await initMars()
-    scene.add(marsAxis)
-} catch (err) {
-    console.log('初始化火星模型失败:', err)
-}
-
-// 初始化木星模型并添加到场景中
-try {
-    await initJupiter()
-    scene.add(jupiterAxis)
-} catch (err) {
-    console.log('初始化木星模型失败:', err)
-}
-
-// 初始化土星模型并添加到场景中
-try {
-    await initSaturn()
-    scene.add(saturnAxis)
-} catch (err) {
-    console.log('初始化土星模型失败:', err)
-}
-
-// 初始化天王星模型并添加到场景中
-try {
-    await initUranus()
-    scene.add(uranusAxis)
-} catch (err) {
-    console.log('初始化天王星模型失败:', err)
-}
-
-// 初始化海王星模型并添加到场景中
-try {
-    await initNeptune()
-    scene.add(neptuneAxis)
-} catch (err) {
-    console.log('初始化海王星模型失败:', err)
+// 初始化所有行星模型并添加到场景中
+for (const planet of planets) {
+    try {
+        await planet.init()
+        scene.add(planet.axis)
+    } catch (err) {
+        console.error(`初始化${planet.config.label.name}模型失败:`, err)
+    }
 }
 
 // 设置可拾取对象
@@ -150,11 +89,10 @@ sunAxis.traverse((obj) => {
 })
 
 // 设置外行星的补光层
-const outerPlants = [jupiterAxis, saturnAxis, uranusAxis, neptuneAxis]
 const OUTER_LIGHT_LAYER = 2
 camera.layers.enable(OUTER_LIGHT_LAYER)
-outerPlants.forEach(axis => {
-    axis.traverse((obj) => {
+getOuterPlanets().forEach(planet => {
+    planet.axis.traverse((obj) => {
         obj.layers.enable(OUTER_LIGHT_LAYER)
     })
 })
@@ -316,29 +254,8 @@ function animate() {
     lastTime = now
     updateFocus(deltaSecond)
 
-    // 更新水星位置和自转
-    updateMercury(!freeze)
-
-    // 更新金星位置和自转
-    updateVenus(!freeze)
-
-    // 更新地球位置和自转
-    updateEarth(!freeze)
-
-    // 更新火星位置和自转
-    updateMars(!freeze)
-
-    // 更新木星位置和自转
-    updateJupiter(!freeze)
-
-    // 更新土星位置和自转
-    updateSaturn(!freeze)
-
-    // 更新天王星位置和自转
-    updateUranus(!freeze)
-
-    // 更新海王星位置和自转
-    updateNeptune(!freeze)
+    // 更新所有行星的位置和自转
+    planets.forEach(planet => planet.update(!freeze))
 
     // composer.render(scene, camera)
 
