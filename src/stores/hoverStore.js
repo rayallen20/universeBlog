@@ -7,6 +7,7 @@ export const useHoverStore = defineStore('hover', {
         screenX: 0,
         screenY: 0,
         labelRect: null,
+        isLabelHover: false,
     }),
     actions: {
         show(planetId, x, y) {
