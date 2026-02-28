@@ -1,0 +1,31 @@
+.labelShape {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(90deg, rgba(5, 9, 18, 0.90) 0%, rgba(5, 9, 18, 0.40) 49.98%, rgba(5, 9, 18, 0.90) 99.97%);
+    /*裁剪*/
+    /* -webkit-clip-path属性的参数是一样的 */
+    clip-path: polygon(
+        /* 顶部凹口 */
+            0px 0px,    /* 左上 */
+            var(--notch-start-x) 0px,   /* 凹口起点 */
+            var(--top-notch-left-diagonal-end-x) var(--notch-depth),    /* 凹口左斜下点 */
+            var(--top-notch-horizontal-end-x) var(--notch-depth),   /* 底部水平线 */
+            var(--top-notch-right-diagonal-end-x) 0px,  /* 凹口终点 */
+                /* 右上 */
+            var(--wrap-width) 0px,
+                /* 右侧到底部 */
+            var(--wrap-width) var(--wrap-height),
+                /* 底部凹口 */
+            var(--bottom-notch-right-diagonal-start-x) var(--wrap-height),    /* 凹口起点 */
+            var(--bottom-notch-right-diagonal-end-x) var(--bottom-notch-right-diagonal-end-y),    /* 凹口右斜上点 */
+            var(--bottom-notch-horizontal-end-x) var(--bottom-notch-right-diagonal-end-y),     /* 底部水平线 */
+            var(--bottom-notch-left-diagonal-end-x) var(--wrap-height),     /* 凹口终点 */
+                /* 回到底边左端 */
+            0px var(--wrap-height),
+            0px var(--left-collapse-start-y),
+            var(--left-collapse-end-x) var(--left-collapse-start-y),
+            var(--left-collapse-end-x) var(--left-collapse-end-y),
+            0px var(--left-collapse-end-y),
+            0px 0px
+    );
+}

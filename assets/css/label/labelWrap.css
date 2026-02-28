@@ -1,0 +1,81 @@
+.labelWrap {
+    --wrap-width: var(--w);
+    --wrap-height: var(--h);
+
+    /* 折线相关配置 */
+    /* 折线起点的水平位置 */
+    --notch-start-x: 60px;
+    /* 折线凹口深度 */
+    --notch-depth: 16px;
+    /* 折线斜边水平距离 */
+    /* Tips: run有延伸的意思 */
+    --notch-run-x: 16px;
+    /* 折线中水平线宽度 = warp宽度 - 起点水平位置 * 2 - 折线斜边水平距离 * 2 */
+    --notch-horizontal-width: calc(var(--wrap-width) - var(--notch-start-x) * 2 - var(--notch-run-x) * 2);
+
+    /* 按钮相关配置 */
+    /* 按钮宽度 */
+    --btn-width: 146px;
+    /* 按钮中心点的水平位置 */
+    --btn-center-x: 213px;
+
+    /* 左侧轨道区域相关配置 */
+    /* 左侧轨道宽 */
+    --leftRail-width: 3px;
+    /* 左侧上边框宽 */
+    --leftRail-top-width: 3px;
+    /* 左侧上边框高 */
+    --leftRail-top-height: 162px;
+    /* 左侧中边框宽 */
+    --leftRail-middle-width: 1px;
+    /* 左侧中边框高 */
+    --leftRail-middle-height: 53px;
+    /* 左侧下边框宽 */
+    --leftRail-bottom-width: 3px;
+    /* 左侧下边框高 */
+    --leftRail-bottom-height: 71px;
+}
+
+.labelWrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--wrap-width);
+    height: var(--wrap-height);
+
+    /* 控制显隐的属性 */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+            opacity 0.5s linear,
+            visibility 0.5s linear;
+
+    /* 顶部折线计算 */
+    /* 顶部折线中 左折线结束点的水平位置 = 折线起点的水平位置 + 折线斜边水平距离 */
+    --top-notch-left-diagonal-end-x: calc(var(--notch-start-x) + var(--notch-run-x));
+    /* 顶部折线中 水平线结束点的水平位置 = 顶部折线中水平线宽度 + 左折线结束点的水平位置 */
+    --top-notch-horizontal-end-x: calc(var(--notch-horizontal-width) + var(--top-notch-left-diagonal-end-x));
+    /* 顶部折线中 右折线结束点的水平位置 = 顶部折线中水平线结束位置 + 折线斜边水平距离 */
+    --top-notch-right-diagonal-end-x: calc(var(--top-notch-horizontal-end-x) + var(--notch-run-x));
+
+    /* 底部折线计算 */
+    /* 底部折线中 右侧折线起始点的水平位置 = wrap宽度 - 折线起点的水平位置 */
+    --bottom-notch-right-diagonal-start-x: calc(var(--wrap-width) - var(--notch-start-x));
+    /* 底部折线中 右侧折线结束点的水平位置 = 底部折线中右侧折线起始点的水平位置 - 折线斜边水平距离 */
+    --bottom-notch-right-diagonal-end-x: calc(var(--bottom-notch-right-diagonal-start-x) - var(--notch-run-x));
+    /* 底部折线中 右侧折线结束点的垂直位置 = wrap高度 - 折线深度 */
+    --bottom-notch-right-diagonal-end-y: calc(var(--wrap-height) - var(--notch-depth));
+    /* 底部折线中 水平线结束点的水平位置 = 底部折线中右侧折线结束点的水平位置 - 水平线宽度 */
+    --bottom-notch-horizontal-end-x: calc(var(--bottom-notch-right-diagonal-end-x) - var(--notch-horizontal-width));
+    /* 底部折线中 左侧折线结束点的水平位置 = 底部折线中水平线结束点的水平位置 - 折线斜边水平距离 */
+    --bottom-notch-left-diagonal-end-x: calc(var(--bottom-notch-horizontal-end-x) - var(--notch-run-x));
+
+    /* 左侧塌陷计算 */
+    /* 左侧塌陷开始点的垂直位置 = wrap高度 - 左侧下边框高 */
+    --left-collapse-start-y: calc(var(--wrap-height) - var(--leftRail-bottom-height));
+    /* 左侧塌陷开始点的水平位置 = 左侧轨道宽 - 左侧中边框宽 */
+    --left-collapse-end-x: calc(var(--leftRail-width) - var(--leftRail-middle-width));
+    /* 左侧塌陷结束点的垂直位置 = 左侧塌陷开始点的垂直位置 - 左侧中边框高 */
+    --left-collapse-end-y: calc(var(--left-collapse-start-y) - var(--leftRail-middle-height));
+}

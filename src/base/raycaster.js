@@ -1,0 +1,47 @@
+import * as THREE from 'three'
+import {pickableMeshes as sunPickableMeshes} from "../sun"
+import {getAllPickableMeshes} from "../planet/planets"
+
+/**
+ * @type {THREE.Raycaster} 射线投射器 用于检测鼠标悬停时与物体的交互
+ * */
+const raycaster = new THREE.Raycaster(
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, -1),
+    0,
+    Infinity
+)
+
+/**
+ * @type {Array<THREE.Mesh>} 可拾取对象数组 用于存储场景中所有可以被鼠标悬停检测的物体
+ * */
+const pickAbleCollection = []
+
+/**
+ * 本函数用于获取所有可拾取对象
+ * */
+export function setPickAble() {
+    pickAbleCollection.push(...sunPickableMeshes)
+    pickAbleCollection.push(...getAllPickableMeshes())
+}
+
+/**
+ * 本函数用于根据鼠标的NDC坐标和相机位置,查找鼠标悬停的物体
+ * @param {THREE.Vector2} mouseNDC 鼠标的NDC坐标
+ * @param {THREE.PerspectiveCamera} camera 用于渲染场景的相机
+ * @return {THREE.Object3D|null} 返回鼠标悬停的物体 如果没有悬停在任何物体上则返回null
+ * */
+export function findHoveringObject(mouseNDC, camera) {
+    let currentHovered = null
+
+    raycaster.setFromCamera(mouseNDC, camera)
+    const intersects = raycaster.intersectObjects(pickAbleCollection, false)
+
+    if (intersects.length === 0) {
+        return currentHovered
+    }
+
+    // Tips: intersects中的元素是按照距离射线起点由近到远排序的所有射线命中的元素
+    // Tips: 而本场景只需要检测到第1个命中的物体即可 没有穿透检测的需求
+    return intersects[0].object
+}
