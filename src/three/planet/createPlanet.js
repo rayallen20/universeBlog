@@ -25,6 +25,7 @@ export function createPlanet(config) {
     root.userData.bodyType = config.label.bodyType
     root.userData.label = config.label.name
     root.userData.intro = config.label.intro
+    root.userData.planetId = config.id
 
     // 自转层
     const spin = new THREE.Group()

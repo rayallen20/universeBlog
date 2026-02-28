@@ -11,7 +11,7 @@ export const scene = new THREE.Scene()
  * 本常量用于定义场景环境贴图的路径
  * @type {string}
  * */
-const SCENE_ENVIRONMENT_PATH = '../../assets/environment/NightSky_2K_HDR.exr'
+const SCENE_ENVIRONMENT_PATH = '/assets/environment/NightSky_2K_HDR.exr'
 
 /**
  * 本函数用于返回一个Promise对象 该Promise用于加载EXR格式的环境贴图

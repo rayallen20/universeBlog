@@ -14,7 +14,7 @@ const config = {
     // 天空球的贴图路径
     // 使用JPG纹理作为场景的**可缩放**的背景
     // TODO: 也可以使用exr格式的背景纹理 这样就可以少加载一次贴图了 因为场景背景也使用的是EXR格式的贴图
-    texturePath: '../assets/environment/NightSkyHDRI008_TONEMAPPED.jpg',
+    texturePath: '/assets/environment/NightSkyHDRI008_TONEMAPPED.jpg',
     // 天空球网格对象的名称
     name: 'skySphere',
     autoRotation: {

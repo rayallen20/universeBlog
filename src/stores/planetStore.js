@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { PLANET_CONFIGS } from '../planet/planetConfigs'
-import { config as sunConfig } from '../sun'
+import { PLANET_CONFIGS } from '../three/planet/planetConfigs'
+import { config as sunConfig } from '../three/sun'
 
 export const usePlanetStore = defineStore('planet', {
     state: () => ({

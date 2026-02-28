@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls'
-import {hidePanel, showPanel} from "../ui/panel";
+
+/**
+ * Pinia focusStore reference
+ * */
+let focusStore = null
 
 const state = {
     // 标志当前是否处于聚焦状态的标量
@@ -101,6 +105,13 @@ const homeControlsTarget = new THREE.Vector3(0, 0, 0)
  * @param {THREE.PerspectiveCamera} cam 当前场景使用的相机
  * @param {OrbitControls} orbitControls 当前场景使用的轨道控制器
  * */
+/**
+ * 本函数用于设置focusStore引用
+ * */
+export function setFocusStore(store) {
+    focusStore = store
+}
+
 export function initFocus(cam, orbitControls) {
     camera = cam
     controls = orbitControls
@@ -117,8 +128,9 @@ export function isFocused() {
 /**
  * 本函数用于设置相机和轨道控制器聚焦到指定物体
  * @param {THREE.Object3D} object 要聚焦的物体
+ * @param {string} planetId 行星ID (用于通知focusStore)
  * */
-export function focusOn(object) {
+export function focusOn(object, planetId) {
     controls.enabled = false
 
     state.focused = true
@@ -204,8 +216,10 @@ export function focusOn(object) {
     toCameraPosition.copy(targetPosition).add(cameraOffset)
     toControlsTarget.copy(targetPosition).add(targetOffset)
 
-    // 显示左侧面板
-    showPanel(object)
+    // 通知focusStore (替代原来的 showPanel)
+    if (focusStore) {
+        focusStore.setFocused(planetId)
+    }
 }
 
 /**
@@ -228,7 +242,10 @@ export function clearFocus() {
     state.isAnimating = true
     state.mode = 'clear'
 
-    hidePanel()
+    // 通知focusStore (替代原来的 hidePanel)
+    if (focusStore) {
+        focusStore.clearFocused()
+    }
 }
 
 /**

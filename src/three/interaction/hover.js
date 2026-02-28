@@ -1,6 +1,32 @@
 import * as THREE from 'three'
 import {findHoveringObject} from "../base/raycaster";
 import {calcProjection, distanceToProjectionEdgePx} from "../lib/projection";
+import {worldToScreen} from "../lib/worldToScreen";
+import {findAncestorByName} from "../lib/findAncestorByName";
+
+/**
+ * Pinia hoverStore reference
+ * */
+let hoverStore = null
+
+/**
+ * sunAxis reference (needed for calcOffset)
+ * */
+let sunAxisRef = null
+
+/**
+ * 本函数用于设置hoverStore引用
+ * */
+export function setHoverStore(store) {
+    hoverStore = store
+}
+
+/**
+ * 本函数用于设置sunAxis引用
+ * */
+export function setSunAxisRef(sunAxis) {
+    sunAxisRef = sunAxis
+}
 
 /**
  * @type {Object} state 本对象用于存储鼠标悬停交互的状态(可以认为是悬停状态的状态机)
@@ -335,4 +361,149 @@ export function tickHover(nowMs, camera, domElement) {
         // case2. 鼠标上一帧在label上,这一帧离开了label,此时直接进入idle状态
         enterIdle()
     }
+}
+
+// ==================== calcOffset (moved from ui/label/calcOffset.js) ====================
+
+const sunPosition = new THREE.Vector3()
+const hoveredBodyPosition = new THREE.Vector3()
+const sunToHoveredBodyDirection = new THREE.Vector3()
+
+/**
+ * 本函数用于计算鼠标悬停在星球上时要显示的div在屏幕上的偏移量
+ * */
+function calcOffset(hoveredRoot, sunAxis, camera, domElement) {
+    let offset = { x: 0, y: 0 }
+
+    if (hoveredRoot.userData.bodyType === 'sun') {
+        offset.x = -80
+        offset.y = 0
+        return offset
+    }
+
+    sunAxis.getWorldPosition(sunPosition)
+    hoveredRoot.getWorldPosition(hoveredBodyPosition)
+    sunToHoveredBodyDirection.copy(hoveredBodyPosition).sub(sunPosition)
+
+    if (sunToHoveredBodyDirection.lengthSq() < 1e-8) {
+        offset.x = 60
+        offset.y = 0
+        return offset
+    }
+
+    const rect = domElement.getBoundingClientRect()
+    sunToHoveredBodyDirection.normalize()
+    const hoveredBodyWorldPosition = hoveredBodyPosition.clone()
+
+    const stepInWorldUnits = 0.2
+    const outwardStepWorldPosition = hoveredBodyPosition.clone().add(
+        sunToHoveredBodyDirection.clone().multiplyScalar(stepInWorldUnits)
+    )
+
+    const hoveredBodyNdcPosition = hoveredBodyWorldPosition.project(camera)
+    const outwardStepNdcPosition = outwardStepWorldPosition.project(camera)
+
+    const hoveredBodyScreenX = (hoveredBodyNdcPosition.x * 0.5 + 0.5) * rect.width
+    const hoveredBodyScreenY = (-hoveredBodyNdcPosition.y * 0.5 + 0.5) * rect.height
+    const outwardStepScreenX = (outwardStepNdcPosition.x * 0.5 + 0.5) * rect.width
+    const outwardStepScreenY = (-outwardStepNdcPosition.y * 0.5 + 0.5) * rect.height
+
+    const outwardScreenDeltaX = outwardStepScreenX - hoveredBodyScreenX
+    const outwardScreenDeltaY = outwardStepScreenY - hoveredBodyScreenY
+    let outwardScreenLength = Math.hypot(outwardScreenDeltaX, outwardScreenDeltaY)
+    if (outwardScreenLength === 0) outwardScreenLength = 1
+
+    const offsetPx = 50
+    offset.x = (outwardScreenDeltaX / outwardScreenLength) * offsetPx
+    offset.y = (outwardScreenDeltaY / outwardScreenLength) * offsetPx
+    return offset
+}
+
+// ==================== label proximity math (moved from ui/label/label.js) ====================
+
+function pointToRectDistancePx(rect, point) {
+    const left = rect.left
+    const right = rect.right
+    const top = rect.top
+    const bottom = rect.bottom
+
+    let dx = 0
+    if (point.x < left) dx = left - point.x
+    else if (point.x > right) dx = point.x - right
+
+    let dy = 0
+    if (point.y < top) dy = top - point.y
+    else if (point.y > bottom) dy = point.y - bottom
+
+    return Math.hypot(dx, dy)
+}
+
+function isNearLabel(rect, pointerPx, enterDistancePx) {
+    return pointToRectDistancePx(rect, pointerPx) <= enterDistancePx
+}
+
+function isFarLabel(rect, pointerPx, exitDistancePx) {
+    return pointToRectDistancePx(rect, pointerPx) >= exitDistancePx
+}
+
+// ==================== checkHover (moved from index.js) ====================
+
+/**
+ * 本函数用于检测当前鼠标是否悬停在某个天体及其label上,并通知hoverStore
+ * @param {THREE.PerspectiveCamera} camera 当前场景使用的相机
+ * @param {HTMLElement} domElement 渲染场景的DOM元素
+ * @return {boolean} 若需要冻结公转则返回true,否则返回false
+ * */
+export function checkHover(camera, domElement) {
+    // 从hoverStore读取isLabelHover状态 (由HoverLabel.vue写入)
+    if (hoverStore) {
+        state.pointer.isLabelHover = hoverStore.isLabelHover
+    }
+
+    const freeze = shouldFreezeRevolution()
+    if (shouldShowLabel()) {
+        const axisName = state.active.entity.userData.anchorPointName
+        const activeObject = findAncestorByName(state.active.entity, axisName)
+
+        // 计算label位置并通知hoverStore (替代原来的 showLabel DOM操作)
+        const hoveredBodyPosition = worldToScreen(activeObject, camera, domElement)
+
+        if (hoveredBodyPosition.ndc.z > 1) {
+            // 物体在镜头后方
+            if (hoverStore) hoverStore.hide()
+        } else {
+            const offset = calcOffset(activeObject, sunAxisRef, camera, domElement)
+            const dx = hoveredBodyPosition.screenX + offset.x
+            const dy = hoveredBodyPosition.screenY + offset.y
+
+            // 获取planetId: 从userData中找bodyType来确定ID
+            const planetId = activeObject.userData.planetId || activeObject.name
+
+            if (hoverStore) {
+                if (!hoverStore.visible || hoverStore.planetId !== planetId) {
+                    hoverStore.show(planetId, dx, dy)
+                } else {
+                    hoverStore.updatePosition(dx, dy)
+                }
+            }
+        }
+
+        // 使用hoverStore.labelRect代替直接读DOM的getBoundingClientRect
+        const labelRect = hoverStore ? hoverStore.labelRect : null
+        state.activeLabel.rect = labelRect
+
+        if (labelRect) {
+            if (!state.pointer.isNearLabel) {
+                state.pointer.isNearLabel = isNearLabel(labelRect, state.pointer.screenPx, state.activeLabel.enterDistancePx)
+            } else {
+                state.pointer.isNearLabel = !isFarLabel(labelRect, state.pointer.screenPx, state.activeLabel.exitDistancePx)
+            }
+        }
+    } else {
+        if (hoverStore) hoverStore.hide()
+        state.activeLabel.rect = null
+        state.pointer.isNearLabel = false
+    }
+
+    return freeze
 }

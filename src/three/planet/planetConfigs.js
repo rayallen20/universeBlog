@@ -26,7 +26,7 @@ export const PLANET_CONFIGS = [
         groupName: 'MercuryRoot',
         axisName: 'MercuryAxis',
         spinName: 'MercurySpin',
-        path: '../../assets/mercury/scene.gltf',
+        path: '/assets/mercury/scene.gltf',
         scale: 1,
         rotationSpeed: 0.04,
         orbit: {
@@ -47,7 +47,7 @@ export const PLANET_CONFIGS = [
         groupName: 'venusRoot',
         axisName: 'venusAxis',
         spinName: 'venusSpin',
-        path: '../assets/venus/scene.gltf',
+        path: '/assets/venus/scene.gltf',
         scale: 2.5,
         rotationSpeed: -0.0096,
         orbit: {
@@ -68,7 +68,7 @@ export const PLANET_CONFIGS = [
         groupName: 'earthRoot',
         axisName: 'earthAxis',
         spinName: 'earthSpin',
-        path: '../assets/earth/scene.gltf',
+        path: '/assets/earth/scene.gltf',
         scale: 2.6,
         rotationSpeed: 0.08,
         orbit: {
@@ -89,7 +89,7 @@ export const PLANET_CONFIGS = [
         groupName: 'marsRoot',
         axisName: 'marsAxis',
         spinName: 'marsSpin',
-        path: '../assets/mars/scene.gltf',
+        path: '/assets/mars/scene.gltf',
         scale: 1.4,
         rotationSpeed: 0.12,
         orbit: {
@@ -110,7 +110,7 @@ export const PLANET_CONFIGS = [
         groupName: 'jupiterRoot',
         axisName: 'jupiterAxis',
         spinName: 'jupiterSpin',
-        path: '../assets/jupiter/scene.gltf',
+        path: '/assets/jupiter/scene.gltf',
         scale: 29.3,
         rotationSpeed: 0.23,
         orbit: {
@@ -131,7 +131,7 @@ export const PLANET_CONFIGS = [
         groupName: 'saturnRoot',
         axisName: 'saturnAxis',
         spinName: 'saturnSpin',
-        path: '../assets/saturn/scene.gltf',
+        path: '/assets/saturn/scene.gltf',
         scale: 24.7,
         rotationSpeed: 0.07,
         orbit: {
@@ -152,7 +152,7 @@ export const PLANET_CONFIGS = [
         groupName: 'uranusRoot',
         axisName: 'uranusAxis',
         spinName: 'uranusSpin',
-        path: '../assets/uranus/scene.gltf',
+        path: '/assets/uranus/scene.gltf',
         scale: 10.5,
         rotationSpeed: 0.13,
         orbit: {
@@ -173,7 +173,7 @@ export const PLANET_CONFIGS = [
         groupName: 'NeptuneRoot',
         axisName: 'NeptuneAxis',
         spinName: 'NeptuneSpin',
-        path: '../../assets/neptune/scene.gltf',
+        path: '/assets/neptune/scene.gltf',
         scale: 10.2,
         rotationSpeed: 0.34,
         orbit: {

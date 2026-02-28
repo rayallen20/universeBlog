@@ -14,7 +14,7 @@ export const config = {
     // 太阳自转轴名称
     axisName: 'sunAxis',
     // 太阳模型的路径
-    path: '../assets/sun/scene.gltf',
+    path: '/assets/sun/scene.gltf',
     // 太阳模型自发光相关配置
     emissive: {
         // 自发光颜色 (略暖白的颜色)
@@ -89,6 +89,7 @@ sunAxis.name = config.axisName
 sunAxis.userData.bodyType = config.label.bodyType
 sunAxis.userData.label = config.label.name
 sunAxis.userData.intro = config.label.intro
+sunAxis.userData.planetId = 'sun'
 
 /**
  * @type {THREE.Group} 太阳组 用于包含太阳模型和相关光源

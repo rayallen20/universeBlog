@@ -1,6 +1,4 @@
 import * as THREE from 'three'
-import {pickableMeshes as sunPickableMeshes} from "../sun"
-import {getAllPickableMeshes} from "../planet/planets"
 
 /**
  * @type {THREE.Raycaster} 射线投射器 用于检测鼠标悬停时与物体的交互
@@ -18,11 +16,14 @@ const raycaster = new THREE.Raycaster(
 const pickAbleCollection = []
 
 /**
- * 本函数用于获取所有可拾取对象
+ * 本函数用于设置所有可拾取对象
+ * @param {Array<Array<THREE.Mesh>>} meshArrays 可拾取网格数组的数组
  * */
-export function setPickAble() {
-    pickAbleCollection.push(...sunPickableMeshes)
-    pickAbleCollection.push(...getAllPickableMeshes())
+export function setPickAble(meshArrays) {
+    pickAbleCollection.length = 0
+    for (const meshes of meshArrays) {
+        pickAbleCollection.push(...meshes)
+    }
 }
 
 /**
